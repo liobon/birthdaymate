@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#7C3AED">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BirthdayMate">
+<title>BirthdayMate</title>
+<style>
+:root {
+  --purple:#7C3AED;--purple-l:#EDE9FE;--purple-m:#A78BFA;--purple-d:#5B21B6;
+  --pink:#EC4899;--pink-l:#FDF2F8;
+  --gold:#F59E0B;--gold-l:#FFFBEB;
+  --green:#10B981;--green-l:#ECFDF5;
+  --red:#EF4444;--red-l:#FEF2F2;
+  --blue:#3B82F6;--blue-l:#EFF6FF;
+  --g50:#F9FAFB;--g100:#F3F4F6;--g200:#E5E7EB;--g300:#D1D5DB;
+  --g400:#9CA3AF;--g500:#6B7280;--g600:#4B5563;--g700:#374151;--g900:#111827;
+  --surface:#FFFFFF;--page-bg:#F5F0FF;
+  --r:14px;--rs:8px;
+  --shadow:0 2px 12px rgba(124,58,237,.10);--shadow-lg:0 8px 32px rgba(124,58,237,.15);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--page-bg);color:var(--g900);min-height:100vh;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
+
+/* Topbar */
+.topbar{background:var(--purple);color:#fff;padding:16px 20px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(91,33,182,.25)}
+.topbar-title{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.topbar-sub{font-size:12px;opacity:.8;margin-top:1px}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:background .15s}
+.icon-btn:active{background:rgba(255,255,255,.3)}
+
+/* Tabbar */
+.tabbar{display:flex;background:var(--surface);border-bottom:1px solid var(--g200);position:sticky;top:72px;z-index:90}
+.tab-btn{flex:1;padding:12px 4px 10px;border:none;background:none;font-size:11px;font-weight:500;color:var(--g400);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:2px solid transparent;transition:all .15s}
+.tab-btn .ti{font-size:20px}
+.tab-btn.active{color:var(--purple);border-bottom-color:var(--purple)}
+
+/* Content */
+.content{flex:1;overflow-y:auto;padding-bottom:80px}
+.page{display:none}.page.active{display:block}
+
+/* Banner */
+.today-banner{margin:16px;border-radius:var(--r);padding:18px 20px;color:#fff;background:linear-gradient(135deg,var(--purple) 0%,var(--pink) 100%);box-shadow:var(--shadow-lg)}
+.today-banner h2{font-size:15px;font-weight:600;opacity:.9;margin-bottom:4px}
+.today-banner .big-date{font-size:22px;font-weight:800;letter-spacing:-.5px}
+
+/* Alert card */
+.bday-alert{background:var(--surface);border-radius:var(--r);border:1.5px solid var(--purple-l);padding:16px;margin:0 16px 12px;box-shadow:var(--shadow)}
+.bday-row{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.av-lg{width:52px;height:52px;font-size:22px}
+.av-md{width:44px;height:44px;font-size:16px}
+.av-sm{width:40px;height:40px;font-size:14px}
+.alert-name{font-size:16px;font-weight:700}
+.alert-sub{font-size:13px;color:var(--g500);margin-top:2px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:9px 14px;border:none;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:opacity .15s;white-space:nowrap}
+.chip:active{opacity:.75}
+.chip-wa{background:#25D366;color:#fff}
+.chip-email{background:var(--purple);color:#fff}
+.chip-card{background:var(--purple-l);color:var(--purple)}
+.chip-gray{background:var(--g100);color:var(--g600)}
+
+/* Section head */
+.section-head{padding:20px 16px 8px;font-size:13px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.6px}
+
+/* Upcoming item */
+.list-item{background:var(--surface);margin:0 16px 8px;border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);cursor:pointer;transition:box-shadow .15s}
+.list-item:active{box-shadow:var(--shadow)}
+.item-info{flex:1;min-width:0}
+.item-name{font-size:15px;font-weight:600}
+.item-sub{font-size:12px;color:var(--g400);margin-top:2px}
+.badge{border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.badge-purple{background:var(--purple-l);color:var(--purple)}
+.badge-gold{background:var(--gold-l);color:var(--gold)}
+.badge-pink{background:var(--pink-l);color:var(--pink)}
+
+/* Search */
+.search-wrap{margin:14px 16px 8px;position:relative}
+.search-wrap input{width:100%;padding:11px 16px 11px 40px;border:1.5px solid var(--g200);border-radius:var(--rs);font-size:15px;background:var(--surface);color:var(--g900);outline:none}
+.search-wrap input:focus{border-color:var(--purple-m)}
+.search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--g400);font-size:16px;pointer-events:none}
+
+/* Contact card */
+.contact-card{background:var(--surface);margin:0 16px 8px;border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.c-info{flex:1;min-width:0;cursor:pointer}
+.c-name{font-size:15px;font-weight:600}
+.c-meta{font-size:12px;color:var(--g400);margin-top:2px}
+.c-bday{font-size:12px;color:var(--purple);font-weight:500;margin-top:2px}
+.c-actions{display:flex;gap:6px}
+.sm-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--g200);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--g500);transition:all .15s}
+.sm-btn:active{background:var(--purple-l);border-color:var(--purple-l);color:var(--purple)}
+.sm-btn.del:active{background:var(--red-l);border-color:var(--red-l);color:var(--red)}
+
+/* FAB */
+.fab{position:fixed;bottom:24px;right:calc(50% - 240px + 16px);width:56px;height:56px;border-radius:50%;background:var(--purple);color:#fff;border:none;cursor:pointer;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(124,58,237,.45);z-index:200;transition:transform .15s}
+.fab:active{transform:scale(.93)}
+@media(max-width:480px){.fab{right:16px}}
+
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.55);align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;padding:20px 20px 36px;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.handle{width:40px;height:4px;border-radius:2px;background:var(--g200);margin:0 auto 18px}
+.modal-title{font-size:19px;font-weight:800;margin-bottom:20px;color:var(--g900)}
+
+/* Form */
+.fg{margin-bottom:16px}
+.fl{font-size:13px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block}
+.fc{width:100%;padding:12px 14px;border:1.5px solid var(--g200);border-radius:var(--rs);font-size:15px;color:var(--g900);background:var(--surface);outline:none;transition:border-color .15s}
+.fc:focus{border-color:var(--purple-m)}
+select.fc{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239CA3AF' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-actions{display:flex;gap:10px;margin-top:24px}
+.btn-primary{flex:1;padding:14px;border:none;border-radius:var(--rs);background:var(--purple);color:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.btn-primary:active{opacity:.85}
+.btn-cancel{padding:14px 20px;border:1.5px solid var(--g200);border-radius:var(--rs);background:none;color:var(--g500);font-size:16px;font-weight:600;cursor:pointer}
+.btn-secondary{padding:12px 18px;border:1.5px solid var(--purple);border-radius:var(--rs);background:none;color:var(--purple);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-secondary:active{background:var(--purple-l)}
+
+/* Card studio */
+.studio-tabs{display:flex;gap:8px;margin-bottom:16px}
+.studio-tab{flex:1;padding:10px;border:1.5px solid var(--g200);border-radius:var(--rs);background:none;font-size:13px;font-weight:600;color:var(--g500);cursor:pointer;transition:all .15s;text-align:center}
+.studio-tab.active{border-color:var(--purple);background:var(--purple-l);color:var(--purple)}
+.studio-panel{display:none}.studio-panel.active{display:block}
+
+/* Card preview */
+.card-preview{border-radius:var(--r);overflow:hidden;margin-bottom:16px;min-height:200px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;text-align:center}
+.card-preview .card-title{font-size:26px;font-weight:800;margin-bottom:8px;line-height:1.2}
+.card-preview .card-msg{font-size:14px;line-height:1.7;opacity:.9}
+.card-preview .card-from{font-size:13px;margin-top:14px;opacity:.75;font-style:italic}
+.card-preview .card-decor{position:absolute;font-size:40px;opacity:.15;pointer-events:none}
+.card-preview .card-decor.tl{top:10px;left:10px}
+.card-preview .card-decor.br{bottom:10px;right:10px}
+
+/* Card theme selector */
+.theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.theme-swatch{height:44px;border-radius:var(--rs);cursor:pointer;border:2px solid transparent;transition:border-color .15s;position:relative}
+.theme-swatch.selected{border-color:var(--purple)}
+.theme-swatch.selected::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700}
+
+/* Music section */
+.music-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.music-tab{padding:8px 12px;border:1.5px solid var(--g200);border-radius:20px;background:none;font-size:12px;font-weight:600;color:var(--g500);cursor:pointer;transition:all .15s}
+.music-tab.active{border-color:var(--purple);background:var(--purple-l);color:var(--purple)}
+.music-panel{display:none}.music-panel.active{display:block}
+
+.song-box{background:var(--purple-l);border-radius:var(--rs);padding:16px;font-size:14px;line-height:1.7;color:var(--g700);white-space:pre-wrap;max-height:180px;overflow-y:auto;margin-bottom:12px}
+.yt-link-box{display:flex;align-items:center;gap:10px;background:var(--red-l);border-radius:var(--rs);padding:14px;margin-bottom:10px;text-decoration:none}
+.yt-icon{width:40px;height:40px;background:var(--red);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0}
+.yt-text .yt-title{font-size:14px;font-weight:600;color:var(--g900)}
+.yt-text .yt-sub{font-size:12px;color:var(--g400);margin-top:2px}
+
+/* Audio player */
+.audio-player{background:var(--g100);border-radius:var(--rs);padding:14px;display:flex;align-items:center;gap:12px}
+.play-btn{width:40px;height:40px;border-radius:50%;background:var(--purple);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.audio-info{flex:1;min-width:0}
+.audio-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.audio-dur{font-size:12px;color:var(--g400)}
+audio{display:none}
+
+/* Spinner */
+.spinner{width:18px;height:18px;border:2.5px solid rgba(124,58,237,.2);border-top-color:var(--purple);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Toast */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--g900);color:#fff;padding:12px 20px;border-radius:24px;font-size:14px;font-weight:500;opacity:0;transition:all .25s;z-index:500;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Empty */
+.empty{text-align:center;padding:48px 32px}
+.empty-ico{font-size:52px;margin-bottom:14px}
+.empty-title{font-size:18px;font-weight:700;color:var(--g700);margin-bottom:8px}
+.empty-body{font-size:14px;color:var(--g400);line-height:1.6}
+
+/* Settings */
+.s-card{background:var(--surface);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.s-row{padding:15px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--g100)}
+.s-row:last-child{border-bottom:none}
+.s-ico{width:36px;height:36px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.s-text{flex:1}
+.s-label{font-size:15px;font-weight:500}
+.s-sub{font-size:12px;color:var(--g400);margin-top:1px}
+.toggle{position:relative;width:44px;height:26px}
+.toggle input{opacity:0;width:0;height:0}
+.tslider{position:absolute;inset:0;background:var(--g300);border-radius:13px;cursor:pointer;transition:background .2s}
+.tslider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s}
+.toggle input:checked+.tslider{background:var(--purple)}
+.toggle input:checked+.tslider:before{transform:translateX(18px)}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div>
+    <div class="topbar-title">🎂 BirthdayMate</div>
+    <div class="topbar-sub" id="topbar-date"></div>
+  </div>
+  <button class="icon-btn" onclick="openModal('modal-settings')" title="Settings">⚙️</button>
+</div>
+
+<!-- Tabbar -->
+<div class="tabbar">
+  <button class="tab-btn active" onclick="switchTab('home')" id="tab-home"><span>🏠</span>Today</button>
+  <button class="tab-btn" onclick="switchTab('upcoming')" id="tab-upcoming"><span>📅</span>Upcoming</button>
+  <button class="tab-btn" onclick="switchTab('contacts')" id="tab-contacts"><span>👥</span>Contacts</button>
+</div>
+
+<div class="content">
+
+  <!-- Home -->
+  <div class="page active" id="page-home">
+    <div class="today-banner">
+      <h2>Today</h2>
+      <div class="big-date" id="banner-date"></div>
+    </div>
+    <div id="today-alerts"></div>
+    <div class="section-head">Coming up next</div>
+    <div id="home-upcoming"></div>
+  </div>
+
+  <!-- Upcoming -->
+  <div class="page" id="page-upcoming">
+    <div id="upcoming-list"></div>
+  </div>
+
+  <!-- Contacts -->
+  <div class="page" id="page-contacts">
+    <div class="search-wrap">
+      <span class="search-ico">🔍</span>
+      <input type="search" placeholder="Search contacts…" id="search-input" oninput="renderContacts()" />
+    </div>
+    <div id="contacts-list"></div>
+  </div>
+
+</div>
+
+<button class="fab" onclick="openAddModal()">+</button>
+<div class="toast" id="toast"></div>
+
+<!-- ══ ADD / EDIT MODAL ══ -->
+<div class="overlay" id="modal-add">
+  <div class="modal">
+    <div class="handle"></div>
+    <div class="modal-title" id="modal-add-title">Add birthday</div>
+    <div class="fg"><label class="fl">Full name *</label><input class="fc" id="f-name" placeholder="e.g. Delroy Campbell"/></div>
+    <div class="f-row">
+      <div class="fg"><label class="fl">Birthday *</label><input class="fc" id="f-date" type="date"/></div>
+      <div class="fg"><label class="fl">Relationship</label>
+        <select class="fc" id="f-rel">
+          <option value="">— select —</option>
+          <optgroup label="Family — Immediate">
+            <option>Mother</option><option>Father</option><option>Son</option><option>Daughter</option>
+            <option>Brother</option><option>Sister</option><option>Spouse</option><option>Partner</option>
+          </optgroup>
+          <optgroup label="Family — Extended">
+            <option>Cousin</option><option>Aunt</option><option>Uncle</option>
+            <option>Grandmother</option><option>Grandfather</option>
+            <option>Nephew</option><option>Niece</option>
+            <option>Brother-in-law</option><option>Sister-in-law</option>
+            <option>Mother-in-law</option><option>Father-in-law</option>
+            <option>Stepbrother</option><option>Stepsister</option>
+            <option>Stepson</option><option>Stepdaughter</option>
+            <option>Godchild</option><option>Godparent</option>
+          </optgroup>
+          <optgroup label="Social">
+            <option>Friend</option><option>Best Friend</option><option>Colleague</option>
+            <option>Church Member</option><option>Neighbour</option><option>Classmate</option><option>Other</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+    <div class="f-row">
+      <div class="fg"><label class="fl">WhatsApp</label><input class="fc" id="f-wa" type="tel" placeholder="+1876…"/></div>
+      <div class="fg"><label class="fl">Email</label><input class="fc" id="f-email" type="email" placeholder="name@…"/></div>
+    </div>
+    <div class="f-row">
+      <div class="fg"><label class="fl">Nickname</label><input class="fc" id="f-nick" placeholder="Optional"/></div>
+      <div class="fg"><label class="fl">Gender</label>
+        <select class="fc" id="f-gender">
+          <option value="">—</option><option>Female</option><option>Male</option><option>Non-binary</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Notes (helps personalise AI messages)</label>
+      <textarea class="fc" id="f-notes" rows="2" placeholder="Hobbies, favourite things, personality…"></textarea>
+    </div>
+    <div class="fg">
+      <label class="fl">Groups this person is in</label>
+      <div id="f-groups-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
+      <button class="btn-secondary" style="width:100%;font-size:13px;padding:9px" onclick="addGroupRow()">+ Add group</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-add')">Cancel</button>
+      <button class="btn-primary" onclick="saveContact()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CARD STUDIO MODAL ══ -->
+<div class="overlay" id="modal-studio">
+  <div class="modal" id="studio-modal-inner">
+    <div class="handle"></div>
+    <div class="modal-title" id="studio-title">🎨 Birthday Card Studio</div>
+
+    <!-- Studio tabs -->
+    <div class="studio-tabs">
+      <button class="studio-tab active" onclick="studioTab('message')" id="stab-message">✉️ Message</button>
+      <button class="studio-tab" onclick="studioTab('card')" id="stab-card">🎨 Card Design</button>
+      <button class="studio-tab" onclick="studioTab('music')" id="stab-music">🎵 Music</button>
+      <button class="studio-tab" onclick="studioTab('groups')" id="stab-groups">👥 Groups</button>
+      <button class="studio-tab" onclick="studioTab('send')" id="stab-send">📤 Send</button>
+    </div>
+
+    <!-- Message panel -->
+    <div class="studio-panel active" id="spanel-message">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="studio-tab active" onclick="msgMode('ai')" id="mtab-ai" style="flex:1">🤖 AI write</button>
+        <button class="studio-tab" onclick="msgMode('manual')" id="mtab-manual" style="flex:1">✏️ Write my own</button>
+      </div>
+      <!-- AI mode -->
+      <div id="msg-ai">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <select class="fc" id="msg-tone" style="flex:1">
+            <option value="warm">Warm & heartfelt</option>
+            <option value="funny">Fun & humorous</option>
+            <option value="spiritual">Spiritual & prayerful</option>
+            <option value="formal">Formal & elegant</option>
+            <option value="poetic">Poetic & lyrical</option>
+          </select>
+          <button class="btn-secondary" onclick="generateMessage()">Generate</button>
+        </div>
+        <div id="msg-status" style="font-size:13px;color:var(--g400);min-height:20px;margin-bottom:6px"></div>
+        <textarea class="fc" id="msg-text" rows="7" placeholder="Your AI-generated message will appear here…" style="font-size:14px;line-height:1.7"></textarea>
+        <button class="chip chip-gray" style="margin-top:8px;font-size:12px" onclick="generateMessage()">🔄 Regenerate</button>
+      </div>
+      <!-- Manual mode -->
+      <div id="msg-manual" style="display:none">
+        <textarea class="fc" id="msg-manual-text" rows="9" placeholder="Write your personal birthday message here…&#10;&#10;Happy Birthday, [Name]!&#10;&#10;…&#10;&#10;With love,&#10;[Your name]" style="font-size:14px;line-height:1.7"></textarea>
+      </div>
+      <div class="modal-actions" style="margin-top:16px">
+        <button class="btn-cancel" onclick="closeModal('modal-studio')">Close</button>
+        <button class="btn-primary" onclick="studioTab('card')">Next: Card →</button>
+      </div>
+    </div>
+
+    <!-- Card design panel -->
+    <div class="studio-panel" id="spanel-card">
+      <div style="font-size:13px;font-weight:600;color:var(--g600);margin-bottom:8px">Choose a theme</div>
+      <div class="theme-grid" id="theme-grid"></div>
+      <div class="card-preview" id="card-preview">
+        <span class="card-decor tl">🎂</span>
+        <span class="card-decor br">🎉</span>
+        <div class="card-title" id="cp-title"></div>
+        <div class="card-msg" id="cp-msg"></div>
+        <div class="card-from" id="cp-from"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="studioTab('message')">← Back</button>
+        <button class="btn-primary" onclick="studioTab('music')">Next: Music →</button>
+      </div>
+    </div>
+
+    <!-- Music panel -->
+    <div class="studio-panel" id="spanel-music">
+      <div class="music-tabs">
+        <button class="music-tab active" onclick="musicTab('none')" id="mtb-none">🚫 No music</button>
+        <button class="music-tab" onclick="musicTab('ailyrics')" id="mtb-ailyrics">🤖 AI song</button>
+        <button class="music-tab" onclick="musicTab('youtube')" id="mtb-youtube">▶️ YouTube</button>
+        <button class="music-tab" onclick="musicTab('import')" id="mtb-import">📂 Import file</button>
+      </div>
+
+      <!-- No music -->
+      <div class="music-panel active" id="mpanel-none">
+        <div style="text-align:center;padding:24px;color:var(--g400);font-size:14px">No music will be included with the greeting.</div>
+      </div>
+
+      <!-- AI lyrics -->
+      <div class="music-panel" id="mpanel-ailyrics">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <select class="fc" id="song-style" style="flex:1">
+            <option value="reggae">Reggae</option>
+            <option value="gospel">Gospel</option>
+            <option value="pop">Pop</option>
+            <option value="r&b">R&amp;B / Soul</option>
+            <option value="calypso">Calypso / Soca</option>
+            <option value="dancehall">Dancehall</option>
+            <option value="country">Country</option>
+            <option value="classical">Classical / Ballad</option>
+          </select>
+          <button class="btn-secondary" onclick="generateSong()">Generate</button>
+        </div>
+        <div id="song-status" style="font-size:13px;color:var(--g400);min-height:20px;margin-bottom:6px"></div>
+        <div class="song-box" id="song-text">Your AI-generated song lyrics will appear here…</div>
+        <div style="font-size:12px;color:var(--g400);margin-bottom:8px;line-height:1.5">💡 Tip: Copy the lyrics and paste into a music generation tool (e.g. Suno AI or Udio) to create a real song.</div>
+        <button class="chip chip-gray" style="font-size:12px" onclick="generateSong()">🔄 New song</button>
+      </div>
+
+      <!-- YouTube -->
+      <div class="music-panel" id="mpanel-youtube">
+        <div style="font-size:14px;color:var(--g600);margin-bottom:12px;line-height:1.5">Search for a birthday song on YouTube to share alongside your greeting.</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <input class="fc" id="yt-query" placeholder="e.g. Happy Birthday reggae instrumental" style="flex:1"/>
+          <button class="btn-secondary" onclick="searchYoutube()">Search</button>
+        </div>
+        <div id="yt-results"></div>
+        <div id="yt-selected" style="display:none;margin-top:10px">
+          <div style="font-size:13px;font-weight:600;color:var(--g600);margin-bottom:6px">Selected song:</div>
+          <div class="yt-link-box" id="yt-selected-box">
+            <div class="yt-icon">▶</div>
+            <div class="yt-text">
+              <div class="yt-title" id="yt-sel-title"></div>
+              <div class="yt-sub">Tap to open in YouTube</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Import -->
+      <div class="music-panel" id="mpanel-import">
+        <div style="font-size:14px;color:var(--g600);margin-bottom:14px;line-height:1.5">Import an audio file from your device to attach to the greeting.</div>
+        <button class="btn-secondary" style="width:100%;margin-bottom:14px" onclick="document.getElementById('audio-import').click()">📂 Choose audio file</button>
+        <input type="file" id="audio-import" accept="audio/*" style="display:none" onchange="importAudio(event)"/>
+        <div id="audio-player-wrap" style="display:none">
+          <div class="audio-player">
+            <button class="play-btn" id="play-btn" onclick="togglePlay()">▶</button>
+            <div class="audio-info">
+              <div class="audio-name" id="audio-name">—</div>
+              <div class="audio-dur" id="audio-dur">—</div>
+            </div>
+          </div>
+          <audio id="audio-el" onended="resetPlay()" ontimeupdate="updateDur()"></audio>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:16px">
+        <button class="btn-cancel" onclick="studioTab('card')">← Back</button>
+        <button class="btn-primary" onclick="studioTab('groups')">Next: Groups →</button>
+      </div>
+    </div>
+
+    <!-- Groups panel -->
+    <div class="studio-panel" id="spanel-groups">
+      <div style="font-size:14px;color:var(--g600);margin-bottom:12px;line-height:1.5">Post a public birthday announcement to the groups this person belongs to.</div>
+
+      <!-- Group post message -->
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+        <div style="font-size:13px;font-weight:600;color:var(--g600);flex:1">Group announcement</div>
+        <button class="btn-secondary" style="font-size:12px;padding:7px 12px" onclick="generateGroupPost()">🤖 Generate</button>
+        <button class="btn-secondary" style="font-size:12px;padding:7px 12px" onclick="regenGroupPost()">🔄</button>
+      </div>
+      <div id="gpost-status" style="font-size:13px;color:var(--g400);min-height:20px;margin-bottom:6px"></div>
+      <textarea class="fc" id="gpost-text" rows="4" placeholder="AI will write a short, warm public announcement…" style="font-size:14px;line-height:1.7;margin-bottom:14px"></textarea>
+
+      <!-- Groups list -->
+      <div style="font-size:13px;font-weight:600;color:var(--g600);margin-bottom:8px">Send to groups:</div>
+      <div id="studio-groups-list"></div>
+      <div id="no-groups-msg" style="display:none;text-align:center;padding:20px;color:var(--g400);font-size:14px;background:var(--g100);border-radius:var(--rs)">
+        No groups saved for this contact.<br>
+        <span style="font-size:12px">Edit the contact to add groups.</span>
+      </div>
+
+      <div class="modal-actions" style="margin-top:16px">
+        <button class="btn-cancel" onclick="studioTab('music')">← Back</button>
+        <button class="btn-primary" onclick="studioTab('send')">Next: Send →</button>
+      </div>
+    </div>
+
+    <!-- Send panel -->
+    <div class="studio-panel" id="spanel-send">
+      <div style="font-size:14px;color:var(--g600);margin-bottom:16px;line-height:1.5">Your card is ready! Choose how to send it.</div>
+
+      <!-- Mini card preview -->
+      <div class="card-preview" id="send-preview" style="min-height:120px;margin-bottom:16px;font-size:90%">
+        <span class="card-decor tl">🎂</span>
+        <span class="card-decor br">🎉</span>
+        <div class="card-title" id="sp-title"></div>
+        <div class="card-msg" id="sp-msg" style="max-height:60px;overflow:hidden"></div>
+      </div>
+
+      <!-- Music summary -->
+      <div id="send-music-info" style="background:var(--g100);border-radius:var(--rs);padding:12px 14px;font-size:13px;color:var(--g600);margin-bottom:16px"></div>
+
+      <!-- Send buttons -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="chip chip-wa" style="justify-content:center;padding:14px;font-size:15px;border-radius:var(--rs)" onclick="sendViaWhatsApp()">💬 Send via WhatsApp</button>
+        <button class="chip chip-email" style="justify-content:center;padding:14px;font-size:15px;border-radius:var(--rs)" onclick="sendViaEmail()">✉️ Send via Email</button>
+        <button class="chip chip-gray" style="justify-content:center;padding:14px;font-size:14px;border-radius:var(--rs)" onclick="copyToClipboard()">📋 Copy message to clipboard</button>
+      </div>
+
+      <button class="btn-cancel" style="width:100%;margin-top:16px;border-radius:var(--rs);padding:12px" onclick="closeModal('modal-studio')">Close studio</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETTINGS ══ -->
+<div class="overlay" id="modal-settings">
+  <div class="modal">
+    <div class="handle"></div>
+    <div class="modal-title">Settings</div>
+    <div style="margin-bottom:16px">
+      <div class="s-card">
+        <div class="s-row">
+          <div class="s-ico" style="background:#EDE9FE">🤖</div>
+          <div class="s-text"><div class="s-label">AI greetings</div><div class="s-sub">Use Claude to generate messages</div></div>
+          <label class="toggle"><input type="checkbox" id="s-ai" checked onchange="saveSetting('ai',this.checked)"><span class="tslider"></span></label>
+        </div>
+        <div class="s-row">
+          <div class="s-ico" style="background:#FFFBEB">📅</div>
+          <div class="s-text"><div class="s-label">Remind me before</div><div class="s-sub">Days advance notice</div></div>
+          <select class="fc" style="width:80px;padding:6px 10px;font-size:13px" id="s-remind" onchange="saveSetting('remind',this.value)">
+            <option value="0">Off</option><option value="1">1 day</option><option value="3" selected>3 days</option><option value="7">7 days</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div class="section-head" style="padding:0 0 8px">Anthropic API key</div>
+      <div class="s-card">
+        <div class="s-row">
+          <div class="s-ico" style="background:#EDE9FE">🔑</div>
+          <div class="s-text">
+            <input class="fc" id="s-apikey" type="password" placeholder="sk-ant-api03-… (get from console.anthropic.com)" style="border:none;padding:0;font-size:13px;background:none;width:100%" onchange="saveSetting('apikey',this.value)"/>
+            <div class="s-sub" style="margin-top:4px">Stored locally on your device only</div>
+          </div>
+          <button onclick="toggleKeyVis()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--g400)" id="key-eye">👁</button>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div class="section-head" style="padding:0 0 8px">My details</div>
+      <div class="s-card">
+        <div class="s-row">
+          <div class="s-ico" style="background:#EDE9FE">👤</div>
+          <div class="s-text"><input class="fc" id="s-myname" placeholder="Your name (for signing messages)" style="border:none;padding:0;font-size:15px;background:none" onchange="saveSetting('myname',this.value)"/></div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div class="section-head" style="padding:0 0 8px">Sync &amp; Backup</div>
+      <div id="sync-status-bar" style="display:none;background:var(--green-l);border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+        <span>✓</span><span id="sync-status-text"></span>
+      </div>
+      <div class="s-card">
+        <!-- Google Drive -->
+        <div class="s-row" style="cursor:pointer" onclick="gdriveSyncMenu()">
+          <div class="s-ico" style="background:#EFF6FF">
+            <svg width="22" height="22" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>
+          </div>
+          <div class="s-text">
+            <div class="s-label">Google Drive sync</div>
+            <div class="s-sub" id="gdrive-sub">Save &amp; load from your Google Drive</div>
+          </div>
+          <span style="color:var(--g300)">›</span>
+        </div>
+        <!-- Dropbox -->
+        <div class="s-row" style="cursor:pointer" onclick="dropboxSyncMenu()">
+          <div class="s-ico" style="background:#EFF6FF">
+            <svg width="22" height="22" viewBox="0 0 528 512" xmlns="http://www.w3.org/2000/svg"><path d="M264.4 116.3l-132 84.3 132 84.3-132 84.3L0 284.1l132.3-84.3L0 116.3 132.3 32zm-132 288l132-84.3 132 84.3-132 84.3zm132-288l132.3 84.3-132.3 84.3 132 84.3 132.3-84.3-132-84.3L528 116.3 396 32z" fill="#0061ff"/></svg>
+          </div>
+          <div class="s-text">
+            <div class="s-label">Dropbox sync</div>
+            <div class="s-sub" id="dropbox-sub">Save &amp; load from your Dropbox</div>
+          </div>
+          <span style="color:var(--g300)">›</span>
+        </div>
+        <!-- Manual export -->
+        <div class="s-row" style="cursor:pointer" onclick="exportData()">
+          <div class="s-ico" style="background:#FFFBEB">📤</div>
+          <div class="s-text"><div class="s-label">Export everything</div><div class="s-sub">Download full backup as JSON</div></div>
+          <span style="color:var(--g300)">›</span>
+        </div>
+        <!-- Manual import -->
+        <div class="s-row" style="cursor:pointer" onclick="document.getElementById('import-file').click()">
+          <div class="s-ico" style="background:#ECFDF5">📥</div>
+          <div class="s-text"><div class="s-label">Import backup</div><div class="s-sub">Restore from exported JSON file</div></div>
+          <span style="color:var(--g300)">›</span>
+        </div>
+      </div>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/>
+      <div id="last-synced" style="font-size:12px;color:var(--g400);text-align:center;margin-top:8px"></div>
+    </div>
+    <button class="btn-primary" onclick="closeModal('modal-settings')">Done</button>
+  </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────
+let contacts = JSON.parse(localStorage.getItem('bm_contacts')||'[]');
+let settings  = Object.assign({ai:true,remind:'3',myname:''},JSON.parse(localStorage.getItem('bm_settings')||'{}'));
+let editingId = null;
+let studioContact = null;
+let currentMsg = '';
+let currentSong = '';
+let selectedYtUrl = '';
+let selectedYtTitle = '';
+let audioBlob = null;
+let audioObjectUrl = '';
+let currentMusicMode = 'none';
+let currentMsgMode = 'ai';
+let selectedTheme = 0;
+
+// ─── Colour palette ───────────────────────────────────────
+const AVATARS=[['#EDE9FE','#7C3AED'],['#FDF2F8','#EC4899'],['#FFFBEB','#F59E0B'],
+               ['#ECFDF5','#10B981'],['#EFF6FF','#3B82F6'],['#FEF2F2','#EF4444']];
+function getColor(n){const i=n.charCodeAt(0)%AVATARS.length;return AVATARS[i]}
+function initials(n){return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+
+// ─── Card themes ──────────────────────────────────────────
+const THEMES=[
+  {name:'Sunset',bg:'linear-gradient(135deg,#667eea,#f093fb)',text:'#fff',emoji:'🌅'},
+  {name:'Tropical',bg:'linear-gradient(135deg,#43e97b,#38f9d7)',text:'#1a5c3a',emoji:'🌺'},
+  {name:'Gold',bg:'linear-gradient(135deg,#f7971e,#ffd200)',text:'#5c3a00',emoji:'⭐'},
+  {name:'Rose',bg:'linear-gradient(135deg,#f953c6,#b91d73)',text:'#fff',emoji:'🌸'},
+  {name:'Ocean',bg:'linear-gradient(135deg,#667eea,#764ba2)',text:'#fff',emoji:'🌊'},
+  {name:'Fiesta',bg:'linear-gradient(135deg,#f857a6,#ff5858)',text:'#fff',emoji:'🎉'},
+  {name:'Mint',bg:'linear-gradient(135deg,#84fab0,#8fd3f4)',text:'#1a3a3a',emoji:'🍃'},
+  {name:'Night',bg:'linear-gradient(135deg,#0f0c29,#302b63)',text:'#fff',emoji:'🌙'},
+];
+
+// ─── Date helpers ─────────────────────────────────────────
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MLONG=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function today(){const d=new Date();return{y:d.getFullYear(),m:d.getMonth()+1,d:d.getDate()}}
+function isToday(ds){if(!ds)return false;const t=today();const[,bm,bd]=ds.split('-').map(Number);return t.m===bm&&t.d===bd}
+function daysUntil(ds){if(!ds)return 999;const t=today();const[,bm,bd]=ds.split('-').map(Number);const now=new Date(t.y,t.m-1,t.d);let nx=new Date(t.y,bm-1,bd);if(nx<now)nx=new Date(t.y+1,bm-1,bd);return Math.round((nx-now)/86400000)}
+function age(ds){if(!ds)return null;const t=today();const[by,bm,bd]=ds.split('-').map(Number);let a=t.y-by;if(t.m<bm||(t.m===bm&&t.d<bd))a--;return a}
+function fmtBday(ds){if(!ds)return'';const[,bm,bd]=ds.split('-').map(Number);return`${MONTHS[bm-1]} ${bd}`}
+function fmtFull(d){return`${DAYS[d.getDay()]}, ${MLONG[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`}
+
+// ─── Init ─────────────────────────────────────────────────
+function init(){
+  const now=new Date();
+  document.getElementById('topbar-date').textContent=fmtFull(now);
+  document.getElementById('banner-date').textContent=fmtFull(now);
+  applySettings();
+  buildThemeGrid();
+  renderHome();renderUpcoming();renderContacts();
+  updateLastSynced();
+}
+
+function applySettings(){
+  document.getElementById('s-ai').checked=settings.ai!==false;
+  document.getElementById('s-remind').value=settings.remind||'3';
+  document.getElementById('s-myname').value=settings.myname||'';
+  document.getElementById('s-apikey').value=settings.apikey||'';
+}
+function toggleKeyVis(){
+  const el=document.getElementById('s-apikey');
+  el.type=el.type==='password'?'text':'password';
+}
+function saveSetting(k,v){settings[k]=v;localStorage.setItem('bm_settings',JSON.stringify(settings))}
+
+// ─── Tabs ─────────────────────────────────────────────────
+function switchTab(tab){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='contacts')renderContacts();
+  if(tab==='upcoming')renderUpcoming();
+}
+
+// ─── Render home ─────────────────────────────────────────
+function renderHome(){
+  const todayBdays=contacts.filter(c=>isToday(c.date));
+  const al=document.getElementById('today-alerts');
+  if(!todayBdays.length){
+    al.innerHTML=`<div style="margin:0 16px 4px;padding:14px 16px;background:var(--surface);border-radius:var(--r);color:var(--g400);font-size:14px;text-align:center">🎉 No birthdays today</div>`;
+  }else{
+    al.innerHTML=todayBdays.map(c=>{
+      const[bg,fg]=getColor(c.name);const a=age(c.date);
+      return`<div class="bday-alert">
+        <div class="bday-row">
+          <div class="avatar av-lg" style="background:${bg};color:${fg}">${initials(c.name)}</div>
+          <div>
+            <div class="alert-name">🎂 ${c.name}</div>
+            <div class="alert-sub">${c.rel||'Contact'}${a?` · Turning ${a}`:''}${c.nick?` · "${c.nick}"`:''}</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="chip chip-card" onclick="openStudio('${c.id}')">🎨 Open Card Studio</button>
+          ${c.wa?`<button class="chip chip-wa" onclick="quickSendWa('${c.id}')">💬 WhatsApp</button>`:''}
+          ${c.email?`<button class="chip chip-email" onclick="quickSendEmail('${c.id}')">✉️ Email</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const upcoming=contacts.filter(c=>c.date&&!isToday(c.date))
+    .map(c=>({...c,days:daysUntil(c.date)})).sort((a,b)=>a.days-b.days).slice(0,5);
+  const up=document.getElementById('home-upcoming');
+  if(!upcoming.length){
+    up.innerHTML=`<div class="empty"><div class="empty-ico">📭</div><div class="empty-title">No upcoming birthdays</div><div class="empty-body">Add contacts to get started.</div></div>`;
+  }else{
+    up.innerHTML=upcoming.map(c=>{
+      const[bg,fg]=getColor(c.name);
+      const cls=c.days<=3?'badge-gold':'badge-purple';
+      return`<div class="list-item" onclick="openStudio('${c.id}')">
+        <div class="avatar av-md" style="background:${bg};color:${fg}">${initials(c.name)}</div>
+        <div class="item-info"><div class="item-name">${c.name}</div><div class="item-sub">${fmtBday(c.date)} · ${c.rel||'Contact'}</div></div>
+        <div class="badge ${cls}">${c.days===1?'Tomorrow':'In '+c.days+'d'}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ─── Upcoming ─────────────────────────────────────────────
+function renderUpcoming(){
+  const sorted=contacts.filter(c=>c.date)
+    .map(c=>({...c,days:daysUntil(c.date),tod:isToday(c.date)}))
+    .sort((a,b)=>{if(a.tod&&!b.tod)return-1;if(!a.tod&&b.tod)return 1;return a.days-b.days});
+  const el=document.getElementById('upcoming-list');
+  if(!sorted.length){el.innerHTML=`<div class="empty"><div class="empty-ico">📅</div><div class="empty-title">No contacts yet</div><div class="empty-body">Use + to add birthdays.</div></div>`;return}
+  el.innerHTML=`<div class="section-head">All upcoming birthdays</div>`+sorted.map(c=>{
+    const[bg,fg]=getColor(c.name);const a=age(c.date);
+    const lbl=c.tod?'Today! 🎂':c.days===1?'Tomorrow':`In ${c.days}d`;
+    const cls=c.tod?'badge-pink':c.days<=3?'badge-gold':'badge-purple';
+    return`<div class="list-item" onclick="openStudio('${c.id}')">
+      <div class="avatar av-md" style="background:${bg};color:${fg}">${initials(c.name)}</div>
+      <div class="item-info">
+        <div class="item-name">${c.name}</div>
+        <div class="item-sub">${fmtBday(c.date)}${a!==null?' · Age '+a:''} · ${c.rel||'Contact'}</div>
+      </div>
+      <div class="badge ${cls}">${lbl}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Contacts ─────────────────────────────────────────────
+function renderContacts(){
+  const q=(document.getElementById('search-input').value||'').toLowerCase();
+  const filtered=contacts.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.rel||'').toLowerCase().includes(q))
+    .sort((a,b)=>a.name.localeCompare(b.name));
+  const el=document.getElementById('contacts-list');
+  if(!contacts.length){el.innerHTML=`<div class="empty"><div class="empty-ico">🎂</div><div class="empty-title">No contacts yet</div><div class="empty-body">Tap + to add your first birthday contact.</div></div>`;return}
+  if(!filtered.length){el.innerHTML=`<div class="empty"><div class="empty-ico">🔍</div><div class="empty-title">No results</div></div>`;return}
+  el.innerHTML=filtered.map(c=>{
+    const[bg,fg]=getColor(c.name);const a=age(c.date);const days=daysUntil(c.date);
+    const dstr=isToday(c.date)?'🎂 Today!':`${days}d away`;
+    return`<div class="contact-card">
+      <div class="avatar av-sm" style="background:${bg};color:${fg}">${initials(c.name)}</div>
+      <div class="c-info" onclick="openStudio('${c.id}')">
+        <div class="c-name">${c.name}${c.nick?` <span style="font-weight:400;color:var(--g400)">(${c.nick})</span>`:''}</div>
+        <div class="c-meta">${c.rel||'Contact'}${a!==null?' · Age '+a:''}</div>
+        <div class="c-bday">${fmtBday(c.date)} · ${dstr}${c.groups&&c.groups.length?' · 👥 '+c.groups.length+' group'+(c.groups.length>1?'s':''):''}</div>
+      </div>
+      <div class="c-actions">
+        <button class="sm-btn" onclick="openEditModal('${c.id}')" title="Edit">✏️</button>
+        <button class="sm-btn del" onclick="deleteContact('${c.id}')" title="Delete">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Add/Edit ─────────────────────────────────────────────
+function openAddModal(){
+  editingId=null;
+  document.getElementById('modal-add-title').textContent='Add birthday';
+  ['f-name','f-wa','f-email','f-nick','f-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-date').value='';
+  document.getElementById('f-rel').value='';
+  document.getElementById('f-gender').value='';
+  document.getElementById('f-groups-list').innerHTML='';
+  openModal('modal-add');
+}
+function openEditModal(id){
+  const c=contacts.find(x=>x.id===id);if(!c)return;
+  editingId=id;
+  document.getElementById('modal-add-title').textContent='Edit birthday';
+  document.getElementById('f-name').value=c.name||'';
+  document.getElementById('f-date').value=c.date||'';
+  document.getElementById('f-rel').value=c.rel||'';
+  document.getElementById('f-wa').value=c.wa||'';
+  document.getElementById('f-email').value=c.email||'';
+  document.getElementById('f-nick').value=c.nick||'';
+  document.getElementById('f-gender').value=c.gender||'';
+  document.getElementById('f-notes').value=c.notes||'';
+  loadGroupsToForm(c.groups||[]);
+  openModal('modal-add');
+}
+function saveContact(){
+  const name=document.getElementById('f-name').value.trim();
+  const date=document.getElementById('f-date').value;
+  if(!name||!date){showToast('Name and birthday are required');return}
+  const contact={
+    id:editingId||uid(),name,date,
+    rel:document.getElementById('f-rel').value,
+    wa:document.getElementById('f-wa').value.trim(),
+    email:document.getElementById('f-email').value.trim(),
+    nick:document.getElementById('f-nick').value.trim(),
+    gender:document.getElementById('f-gender').value,
+    notes:document.getElementById('f-notes').value.trim(),
+    groups:getGroupsFromForm(),
+  };
+  if(editingId){const i=contacts.findIndex(c=>c.id===editingId);contacts[i]=contact}
+  else contacts.push(contact);
+  persist();closeModal('modal-add');
+  renderHome();renderUpcoming();renderContacts();
+  showToast(editingId?'Contact updated ✓':'Birthday added 🎂');
+}
+function deleteContact(id){
+  if(!confirm('Remove this contact?'))return;
+  contacts=contacts.filter(c=>c.id!==id);persist();
+  renderHome();renderUpcoming();renderContacts();
+  showToast('Contact removed');
+}
+function persist(){localStorage.setItem('bm_contacts',JSON.stringify(contacts))}
+
+// ─── Card Studio ──────────────────────────────────────────
+function openStudio(id){
+  studioContact=contacts.find(c=>c.id===id);if(!studioContact)return;
+  const nick=studioContact.nick||studioContact.name.split(' ')[0];
+  document.getElementById('studio-title').textContent=`🎨 Card Studio — ${nick}`;
+  // Reset studio state
+  currentMsg='';currentSong='';selectedYtUrl='';selectedYtTitle='';currentMusicMode='none';currentGroupPost='';
+  document.getElementById('msg-text').value='';
+  document.getElementById('msg-manual-text').value='';
+  document.getElementById('msg-status').innerHTML='';
+  document.getElementById('song-text').textContent='Song lyrics will appear here…';
+  document.getElementById('song-status').innerHTML='';
+  document.getElementById('yt-results').innerHTML='';
+  document.getElementById('yt-query').value=`Happy Birthday ${nick}`;
+  document.getElementById('yt-selected').style.display='none';
+  document.getElementById('audio-player-wrap').style.display='none';
+  // Reset tabs
+  studioTab('message',true);
+  msgMode('ai',true);
+  musicTab('none',true);
+  openModal('modal-studio');
+  // Auto-generate message
+  setTimeout(generateMessage,200);
+}
+
+function studioTab(tab, silent){
+  ['message','card','music','groups','send'].forEach(t=>{
+    document.getElementById('stab-'+t).classList.toggle('active',t===tab);
+    document.getElementById('spanel-'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='card')updateCardPreview();
+  if(tab==='groups')openGroupsPanel();
+  if(tab==='send')updateSendPanel();
+}
+
+function msgMode(mode, silent){
+  currentMsgMode=mode;
+  ['ai','manual'].forEach(m=>{
+    document.getElementById('mtab-'+m).classList.toggle('active',m===mode);
+  });
+  document.getElementById('msg-ai').style.display=mode==='ai'?'block':'none';
+  document.getElementById('msg-manual').style.display=mode==='manual'?'block':'none';
+}
+
+function musicTab(tab, silent){
+  currentMusicMode=tab;
+  ['none','ailyrics','youtube','import'].forEach(t=>{
+    document.getElementById('mtb-'+t).classList.toggle('active',t===tab);
+    document.getElementById('mpanel-'+t).classList.toggle('active',t===tab);
+  });
+}
+
+// ─── AI message generation ────────────────────────────────
+async function generateMessage(){
+  if(settings.ai===false){
+    document.getElementById('msg-text').value='AI is disabled in settings. Write your message manually.';return;
+  }
+  const c=studioContact;
+  const nick=c.nick||c.name.split(' ')[0];
+  const a=age(c.date);
+  const tone=document.getElementById('msg-tone').value;
+  const toneDesc={warm:'warm, heartfelt, and loving',funny:'fun, playful, and humorous',spiritual:'spiritual, faith-based, and prayerful (Christian)',formal:'formal, elegant, and refined',poetic:'poetic, lyrical, and expressive'}[tone];
+  const myName=settings.myname||'me';
+  const prompt=`Write a ${toneDesc} birthday message for ${c.name}${c.nick?' (called '+c.nick+')':''}. They are my ${c.rel||'friend'}.${a!==null?' They are turning '+a+'.':''} ${c.gender?'Pronoun: '+c.gender+'.':''} ${c.notes?'About them: '+c.notes:''} From: ${myName}. Write 3-5 sentences. Sign off with "With love, ${myName}" or similar warm closing. Be genuine, not generic.`;
+  document.getElementById('msg-status').innerHTML='<span class="spinner"></span> Generating…';
+  try{
+    const r=await callClaude(prompt);
+    currentMsg=r;
+    document.getElementById('msg-text').value=r;
+    document.getElementById('msg-status').innerHTML='<span style="color:var(--green)">✓ AI message ready</span>';
+  }catch(e){
+    document.getElementById('msg-status').innerHTML='<span style="color:var(--red)">⚠ Could not reach AI — write manually</span>';
+  }
+}
+
+// ─── AI song generation ───────────────────────────────────
+async function generateSong(){
+  const c=studioContact;
+  const nick=c.nick||c.name.split(' ')[0];
+  const a=age(c.date);
+  const style=document.getElementById('song-style').value;
+  const prompt=`Write original birthday song lyrics in ${style} style for ${c.name}${c.nick?' (called '+c.nick+')':''}. They are ${c.rel||'a friend'}${a!==null?' turning '+a:''}. ${c.notes?'About them: '+c.notes:''} Include: a verse, chorus, and outro. Make it joyful and personal. Label each section clearly (Verse 1:, Chorus:, etc). Keep it singable and fun. From: ${settings.myname||'a friend'}.`;
+  document.getElementById('song-status').innerHTML='<span class="spinner"></span> Composing song…';
+  document.getElementById('song-text').textContent='';
+  try{
+    const r=await callClaude(prompt,1500);
+    currentSong=r;
+    document.getElementById('song-text').textContent=r;
+    document.getElementById('song-status').innerHTML='<span style="color:var(--green)">✓ Song ready — copy lyrics to Suno AI or Udio to generate audio!</span>';
+  }catch(e){
+    document.getElementById('song-status').innerHTML='<span style="color:var(--red)">⚠ Could not reach AI</span>';
+  }
+}
+
+// ─── YouTube search ───────────────────────────────────────
+function searchYoutube(){
+  const q=document.getElementById('yt-query').value.trim();
+  if(!q)return;
+  const encoded=encodeURIComponent(q);
+  const ytUrl=`https://www.youtube.com/results?search_query=${encoded}`;
+  // We can't embed YouTube results directly, so we give smart links
+  document.getElementById('yt-results').innerHTML=`
+    <div style="background:var(--red-l);border-radius:var(--rs);padding:14px;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">Tap a suggestion to search YouTube:</div>
+      ${['Happy Birthday '+document.getElementById('yt-query').value.replace(/happy birthday/i,'').trim(),'Happy Birthday song reggae','Happy Birthday gospel song','Happy Birthday instrumental','Happy Birthday R&B soul'].map(s=>`
+        <div style="padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06);cursor:pointer" onclick="selectYt('https://www.youtube.com/results?search_query=${encodeURIComponent(s)}','${escHtml(s)}')">
+          <span style="color:var(--red)">▶</span> <span style="font-size:14px">${escHtml(s)}</span>
+        </div>`).join('')}
+      <div style="padding:10px 0 2px;text-align:center">
+        <a href="${ytUrl}" target="_blank" style="color:var(--red);font-size:14px;font-weight:600;text-decoration:none">🔍 Open full YouTube search →</a>
+      </div>
+    </div>`;
+}
+
+function selectYt(url,title){
+  selectedYtUrl=url;selectedYtTitle=title;
+  document.getElementById('yt-sel-title').textContent=title;
+  document.getElementById('yt-selected-box').onclick=()=>window.open(url,'_blank');
+  document.getElementById('yt-selected').style.display='block';
+  showToast('Song selected ✓');
+}
+
+// ─── Audio import ─────────────────────────────────────────
+function importAudio(e){
+  const f=e.target.files[0];if(!f)return;
+  if(audioObjectUrl)URL.revokeObjectURL(audioObjectUrl);
+  audioObjectUrl=URL.createObjectURL(f);
+  const audio=document.getElementById('audio-el');
+  audio.src=audioObjectUrl;
+  document.getElementById('audio-name').textContent=f.name;
+  document.getElementById('audio-dur').textContent='Loading…';
+  audio.onloadedmetadata=()=>{
+    const m=Math.floor(audio.duration/60);const s=Math.floor(audio.duration%60);
+    document.getElementById('audio-dur').textContent=`${m}:${String(s).padStart(2,'0')}`;
+  };
+  document.getElementById('audio-player-wrap').style.display='block';
+  e.target.value='';
+}
+function togglePlay(){
+  const a=document.getElementById('audio-el');const btn=document.getElementById('play-btn');
+  if(a.paused){a.play();btn.textContent='⏸'}else{a.pause();btn.textContent='▶'}
+}
+function resetPlay(){document.getElementById('play-btn').textContent='▶'}
+function updateDur(){
+  const a=document.getElementById('audio-el');
+  if(isNaN(a.duration))return;
+  const cur=Math.floor(a.currentTime);const tot=Math.floor(a.duration);
+  const fmt=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+  document.getElementById('audio-dur').textContent=`${fmt(cur)} / ${fmt(tot)}`;
+}
+
+// ─── Card preview ─────────────────────────────────────────
+function buildThemeGrid(){
+  document.getElementById('theme-grid').innerHTML=THEMES.map((t,i)=>`
+    <div class="theme-swatch ${i===0?'selected':''}" style="background:${t.bg}" onclick="selectTheme(${i})" title="${t.name}"></div>
+  `).join('');
+}
+function selectTheme(i){
+  selectedTheme=i;
+  document.querySelectorAll('.theme-swatch').forEach((s,j)=>s.classList.toggle('selected',j===i));
+  updateCardPreview();
+}
+function updateCardPreview(){
+  const c=studioContact;if(!c)return;
+  const nick=c.nick||c.name.split(' ')[0];
+  const t=THEMES[selectedTheme];
+  const msg=getCurrentMsg();
+  // Truncate for preview
+  const preview=msg.length>180?msg.slice(0,180)+'…':msg;
+  ['card-preview','send-preview'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.style.background=t.bg;el.style.color=t.text;
+  });
+  document.getElementById('cp-title').textContent=`Happy Birthday, ${nick}! 🎂`;
+  document.getElementById('cp-msg').textContent=preview||'Your message will appear here.';
+  document.getElementById('cp-from').textContent=settings.myname?`— with love, ${settings.myname}`:'';
+  document.getElementById('sp-title').textContent=`Happy Birthday, ${nick}! 🎂`;
+  document.getElementById('sp-msg').textContent=preview||'';
+}
+
+function getCurrentMsg(){
+  if(currentMsgMode==='manual')return document.getElementById('msg-manual-text').value;
+  return document.getElementById('msg-text').value||currentMsg;
+}
+
+// ─── Send panel ───────────────────────────────────────────
+function updateSendPanel(){
+  updateCardPreview();
+  let musicInfo='🚫 No music selected';
+  if(currentMusicMode==='ailyrics'&&currentSong) musicInfo='🎵 AI song lyrics included in the message';
+  if(currentMusicMode==='youtube'&&selectedYtUrl) musicInfo=`▶️ YouTube link: ${selectedYtTitle}`;
+  if(currentMusicMode==='import'&&audioObjectUrl) musicInfo=`📂 Audio file selected (attach manually when sharing)`;
+  document.getElementById('send-music-info').textContent=musicInfo;
+}
+
+function buildFullMessage(){
+  const c=studioContact;
+  const nick=c.nick||c.name.split(' ')[0];
+  let msg=getCurrentMsg();
+  if(!msg)msg=`Happy Birthday, ${nick}! 🎂 Wishing you a wonderful day filled with joy and love!\n\n— ${settings.myname||''}`;
+  // Append music
+  if(currentMusicMode==='ailyrics'&&currentSong){
+    msg+=`\n\n🎵 *A special birthday song for you:*\n\n${currentSong}`;
+  }
+  if(currentMusicMode==='youtube'&&selectedYtUrl){
+    msg+=`\n\n🎵 *A birthday song for you:* ${selectedYtUrl}`;
+  }
+  return msg;
+}
+
+function sendViaWhatsApp(){
+  const c=studioContact;
+  if(!c.wa){showToast('No WhatsApp number saved for this contact');return}
+  const num=c.wa.replace(/\D/g,'');
+  const msg=buildFullMessage();
+  window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+function sendViaEmail(){
+  const c=studioContact;
+  if(!c.email){showToast('No email address saved for this contact');return}
+  const nick=c.nick||c.name.split(' ')[0];
+  const subj=encodeURIComponent(`Happy Birthday, ${nick}! 🎂`);
+  const body=encodeURIComponent(buildFullMessage());
+  window.open(`mailto:${c.email}?subject=${subj}&body=${body}`,'_blank');
+}
+function copyToClipboard(){
+  navigator.clipboard.writeText(buildFullMessage()).then(()=>showToast('Copied to clipboard ✓')).catch(()=>showToast('Copy not supported in this browser'));
+}
+
+// ─── Quick send (from home alerts) ───────────────────────
+function quickSendWa(id){
+  studioContact=contacts.find(c=>c.id===id);openStudio(id);
+}
+function quickSendEmail(id){
+  studioContact=contacts.find(c=>c.id===id);openStudio(id);
+}
+
+// ─── Group management ────────────────────────────────────
+let currentGroupPost = '';
+
+function addGroupRow(name='', platform='WhatsApp'){
+  const list = document.getElementById('f-groups-list');
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:6px;align-items:center';
+  row.innerHTML = `
+    <input class="fc" placeholder="Group name (e.g. Family Chat)" value="${name.replace(/"/g,'&quot;')}" style="flex:1;padding:9px 12px;font-size:14px"/>
+    <select class="fc" style="width:110px;padding:9px 8px;font-size:13px">
+      <option${platform==='WhatsApp'?' selected':''}>WhatsApp</option>
+      <option${platform==='Facebook'?' selected':''}>Facebook</option>
+      <option${platform==='Telegram'?' selected':''}>Telegram</option>
+      <option${platform==='Other'?' selected':''}>Other</option>
+    </select>
+    <button onclick="this.parentElement.remove()" style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--g200);background:none;cursor:pointer;font-size:16px;color:var(--g400);flex-shrink:0">×</button>`;
+  list.appendChild(row);
+}
+
+function getGroupsFromForm(){
+  const rows = document.getElementById('f-groups-list').querySelectorAll('div');
+  const groups = [];
+  rows.forEach(row=>{
+    const inp = row.querySelector('input');
+    const sel = row.querySelector('select');
+    if(inp && sel && inp.value.trim()){
+      groups.push({name: inp.value.trim(), platform: sel.value});
+    }
+  });
+  return groups;
+}
+
+function loadGroupsToForm(groups){
+  document.getElementById('f-groups-list').innerHTML = '';
+  (groups||[]).forEach(g => addGroupRow(g.name, g.platform));
+}
+
+function openGroupsPanel(){
+  const c = studioContact; if(!c) return;
+  const groups = c.groups||[];
+  const listEl = document.getElementById('studio-groups-list');
+  const noMsg = document.getElementById('no-groups-msg');
+  if(!groups.length){
+    listEl.innerHTML = '';
+    noMsg.style.display = 'block';
+    return;
+  }
+  noMsg.style.display = 'none';
+  const platformIcon = {WhatsApp:'💬',Facebook:'👥',Telegram:'✈️',Other:'📢'};
+  const platformAction = {
+    WhatsApp: (gname, msg) => `https://wa.me/?text=${encodeURIComponent('*'+gname+'*\n\n'+msg)}`,
+    Facebook: (gname, msg) => `https://www.facebook.com/`,
+    Telegram: (gname, msg) => `https://t.me/share/url?text=${encodeURIComponent(msg)}`,
+    Other: null
+  };
+  listEl.innerHTML = groups.map((g,i)=>`
+    <div style="background:var(--surface);border-radius:var(--rs);border:1px solid var(--g200);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border-radius:var(--rs);background:var(--purple-l);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${platformIcon[g.platform]||'📢'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:600">${g.name}</div>
+        <div style="font-size:12px;color:var(--g400);margin-top:2px">${g.platform}</div>
+      </div>
+      <button class="chip chip-wa" style="font-size:13px;padding:8px 14px" onclick="postToGroup(${i})">${platformIcon[g.platform]||'📢'} Post</button>
+    </div>`).join('');
+
+  // Auto-generate group post if not done yet
+  if(!currentGroupPost && (c.groups||[]).length){
+    generateGroupPost();
+  } else if(currentGroupPost){
+    document.getElementById('gpost-text').value = currentGroupPost;
+  }
+}
+
+async function generateGroupPost(){
+  const c = studioContact; if(!c) return;
+  const nick = c.nick||c.name.split(' ')[0];
+  const a = age(c.date);
+  const prompt = `Write a short, warm birthday announcement for a WhatsApp or Facebook group. It should celebrate ${c.name}${c.nick?' (called '+c.nick+')':''}'s birthday today${a?' (turning '+a+')':''}. They are ${c.rel||'a member of the group'}. Keep it to 2-3 sentences max. Make it joyful and inclusive — written for the whole group to see and join in wishing them well. Use 2-3 relevant emojis. Do NOT add any signature or closing. From the perspective of the group admin/member posting on behalf of everyone.`;
+  document.getElementById('gpost-status').innerHTML='<span class="spinner"></span> Generating announcement…';
+  try{
+    const r = await callClaude(prompt, 300);
+    currentGroupPost = r;
+    document.getElementById('gpost-text').value = r;
+    document.getElementById('gpost-status').innerHTML='<span style="color:var(--green)">✓ Ready to post</span>';
+  }catch(e){
+    document.getElementById('gpost-status').innerHTML='<span style="color:var(--red)">⚠ Could not reach AI — write manually</span>';
+  }
+}
+
+function regenGroupPost(){ currentGroupPost=''; generateGroupPost(); }
+
+function postToGroup(idx){
+  const c = studioContact; if(!c) return;
+  const g = (c.groups||[])[idx]; if(!g) return;
+  const msg = document.getElementById('gpost-text').value || currentGroupPost || buildFullMessage();
+  const encoded = encodeURIComponent(msg);
+
+  if(g.platform === 'WhatsApp'){
+    // Opens WA with message pre-filled; user picks the group
+    window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    showToast('Opening WhatsApp — select the group to post');
+  } else if(g.platform === 'Facebook'){
+    // Copy message and open Facebook
+    navigator.clipboard.writeText(msg).then(()=>{
+      showToast('Message copied — paste into your Facebook group post');
+      window.open('https://www.facebook.com/', '_blank');
+    }).catch(()=>{
+      showToast('Open Facebook and paste your message manually');
+      window.open('https://www.facebook.com/', '_blank');
+    });
+  } else if(g.platform === 'Telegram'){
+    window.open(`https://t.me/share/url?url=&text=${encoded}`, '_blank');
+    showToast('Opening Telegram — select the group');
+  } else {
+    navigator.clipboard.writeText(msg).then(()=>{
+      showToast('Message copied to clipboard — paste into your group');
+    });
+  }
+}
+
+// ─── Claude API ───────────────────────────────────────────
+async function callClaude(prompt,maxTokens=1000){
+  const key=(settings.apikey||'').trim();
+  if(!key){
+    showToast('Add your Anthropic API key in Settings ⚙️');
+    throw new Error('No API key');
+  }
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTokens,messages:[{role:'user',content:prompt}]})
+  });
+  const d=await r.json();
+  if(!d.content?.[0]?.text)throw new Error(d.error?.message||'No response');
+  return d.content[0].text;
+}
+
+// ─── Helpers ──────────────────────────────────────────────
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2300)}
+
+// ─── Export/Import ────────────────────────────────────────
+// ─── Sync helpers ────────────────────────────────────────
+const SYNC_FILE = 'birthdaymate-sync.json';
+
+function buildSyncPayload(){
+  return JSON.stringify({
+    contacts, settings, version: 3,
+    syncedAt: new Date().toISOString(),
+    device: navigator.userAgent.includes('Android') ? 'Android' : 'Desktop'
+  }, null, 2);
+}
+
+function applySyncPayload(raw){
+  const d = JSON.parse(raw);
+  if(d.contacts){ contacts = d.contacts; persist(); }
+  if(d.settings){ settings = Object.assign(settings, d.settings); localStorage.setItem('bm_settings', JSON.stringify(settings)); applySettings(); }
+  if(d.syncedAt){ localStorage.setItem('bm_lastsynced', d.syncedAt+'|'+( d.device||'Unknown')); }
+  renderHome(); renderUpcoming(); renderContacts();
+  updateLastSynced();
+}
+
+function updateLastSynced(){
+  const raw = localStorage.getItem('bm_lastsynced');
+  const el = document.getElementById('last-synced');
+  if(!el) return;
+  if(!raw){ el.textContent=''; return; }
+  const [ts, dev] = raw.split('|');
+  const d = new Date(ts);
+  el.textContent = `Last synced: ${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})} from ${dev||'Unknown'}`;
+}
+
+function showSyncStatus(msg, ok=true){
+  const bar = document.getElementById('sync-status-bar');
+  const txt = document.getElementById('sync-status-text');
+  if(!bar||!txt) return;
+  bar.style.display = 'flex';
+  bar.style.background = ok ? 'var(--green-l)' : 'var(--red-l)';
+  bar.style.color = ok ? 'var(--green)' : 'var(--red)';
+  bar.querySelector('span').textContent = ok ? '✓' : '⚠';
+  txt.textContent = msg;
+  setTimeout(()=>{ bar.style.display='none'; }, 4000);
+}
+
+// ─── Manual export / import ───────────────────────────────
+function exportData(){
+  const blob = new Blob([buildSyncPayload()], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `birthdaymate-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  localStorage.setItem('bm_lastsynced', new Date().toISOString()+'|'+(navigator.userAgent.includes('Android')?'Android':'Desktop'));
+  updateLastSynced();
+  showToast('Exported ✓');
+}
+
+function importData(e){
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try{
+      applySyncPayload(ev.target.result);
+      showToast(`Imported ${contacts.length} contacts ✓`);
+      closeModal('modal-settings');
+    }catch(err){ showToast('Invalid file'); }
+  };
+  r.readAsText(f); e.target.value='';
+}
+
+// ─── Google Drive sync ────────────────────────────────────
+// Uses Google Picker + Drive REST API via GIS (no backend needed)
+const GD_CLIENT_ID = localStorage.getItem('bm_gd_client_id')||'YOUR_GOOGLE_CLIENT_ID';
+const GD_SCOPE = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
+let gdToken = null;
+
+function gdriveSyncMenu(){
+  const sub = document.getElementById('gdrive-sub');
+  // Show action sheet inside settings
+  const existing = document.getElementById('gdrive-actions');
+  if(existing){ existing.remove(); return; }
+  const div = document.createElement('div');
+  div.id = 'gdrive-actions';
+  div.style.cssText = 'padding:0 0 8px;display:flex;flex-direction:column;gap:6px;';
+  div.innerHTML = `
+    <div style="font-size:13px;color:var(--g500);padding:8px 0 4px;font-weight:600">Google Drive sync</div>
+    <div style="font-size:12px;color:var(--g400);margin-bottom:6px;line-height:1.5">Saves a file called <code>birthdaymate-sync.json</code> in your Google Drive. Sign in with the same Google account on both devices.</div>
+    <button class="btn-secondary" style="width:100%;margin-bottom:4px" onclick="gdriveSignInAndSave()">☁️ Save to Google Drive</button>
+    <button class="btn-secondary" style="width:100%" onclick="gdriveSignInAndLoad()">⬇️ Load from Google Drive</button>
+    <div style="font-size:11px;color:var(--g400);margin-top:6px;line-height:1.5">⚠ Requires a Google Cloud OAuth Client ID.<br>See Settings → Google Drive Setup for instructions.</div>
+    <button class="btn-secondary" style="width:100%;margin-top:4px;font-size:12px" onclick="showGdSetup()">🔧 Google Drive Setup</button>`;
+  const row = document.querySelector('[onclick="gdriveSyncMenu()"]');
+  if(row) row.insertAdjacentElement('afterend', div);
+}
+
+async function gdriveGetToken(){
+  return new Promise((resolve, reject) => {
+    const clientId = localStorage.getItem('bm_gd_client_id')||'';
+    if(!clientId){ showToast('Add your Google Client ID in Drive Setup first'); reject('no-client-id'); return; }
+    if(!window.google){ loadScript('https://accounts.google.com/gsi/client', ()=>gdriveGetToken().then(resolve).catch(reject)); return; }
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: GD_SCOPE,
+      callback: (resp) => {
+        if(resp.error){ reject(resp.error); return; }
+        gdToken = resp.access_token;
+        resolve(gdToken);
+      }
+    });
+    client.requestAccessToken();
+  });
+}
+
+async function gdriveSignInAndSave(){
+  try{
+    showToast('Connecting to Google…');
+    const token = await gdriveGetToken();
+    await gdriveSaveFile(token, buildSyncPayload());
+    localStorage.setItem('bm_lastsynced', new Date().toISOString()+'|'+(navigator.userAgent.includes('Android')?'Android':'Desktop'));
+    updateLastSynced();
+    showSyncStatus('Saved to Google Drive ✓');
+    document.getElementById('gdrive-actions')?.remove();
+  }catch(e){ showSyncStatus('Google Drive save failed: '+e, false); }
+}
+
+async function gdriveSignInAndLoad(){
+  try{
+    showToast('Connecting to Google…');
+    const token = await gdriveGetToken();
+    const data = await gdriveLoadFile(token);
+    if(!data){ showSyncStatus('No sync file found on Drive — save first', false); return; }
+    applySyncPayload(data);
+    showSyncStatus(`Loaded ${contacts.length} contacts from Google Drive ✓`);
+    document.getElementById('gdrive-actions')?.remove();
+  }catch(e){ showSyncStatus('Google Drive load failed: '+e, false); }
+}
+
+async function gdriveSaveFile(token, content){
+  // Find or create file
+  const searchResp = await fetch('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%22'+SYNC_FILE+'%22', {headers:{Authorization:'Bearer '+token}});
+  const searchData = await searchResp.json();
+  const fileId = searchData.files?.[0]?.id;
+
+  const metadata = {name: SYNC_FILE, parents: fileId ? undefined : ['appDataFolder']};
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
+  form.append('file', new Blob([content], {type:'application/json'}));
+
+  const url = fileId
+    ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
+    : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+  const method = fileId ? 'PATCH' : 'POST';
+  const resp = await fetch(url, {method, headers:{Authorization:'Bearer '+token}, body:form});
+  if(!resp.ok) throw new Error(await resp.text());
+}
+
+async function gdriveLoadFile(token){
+  const searchResp = await fetch('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%22'+SYNC_FILE+'%22', {headers:{Authorization:'Bearer '+token}});
+  const searchData = await searchResp.json();
+  const fileId = searchData.files?.[0]?.id;
+  if(!fileId) return null;
+  const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {headers:{Authorization:'Bearer '+token}});
+  if(!resp.ok) throw new Error(await resp.text());
+  return await resp.text();
+}
+
+function showGdSetup(){
+  const existing = document.getElementById('gdrive-setup-panel');
+  if(existing){ existing.remove(); return; }
+  const savedId = localStorage.getItem('bm_gd_client_id')||'';
+  const div = document.createElement('div');
+  div.id = 'gdrive-setup-panel';
+  div.style.cssText = 'background:var(--g50);border-radius:var(--rs);padding:14px;margin-top:8px;font-size:13px;line-height:1.6;color:var(--g600)';
+  div.innerHTML = `
+    <div style="font-weight:600;margin-bottom:8px">Google Drive Setup</div>
+    <ol style="padding-left:16px;margin-bottom:10px">
+      <li>Go to <a href="https://console.cloud.google.com" target="_blank" style="color:var(--purple)">console.cloud.google.com</a></li>
+      <li>Create a project → Enable <b>Google Drive API</b></li>
+      <li>OAuth consent screen → External → Add your email</li>
+      <li>Credentials → Create OAuth 2.0 Client ID → Web application</li>
+      <li>Add your app's URL to Authorised JavaScript Origins</li>
+      <li>Copy the Client ID and paste below</li>
+    </ol>
+    <input class="fc" id="gd-client-id-input" placeholder="paste-your-client-id.apps.googleusercontent.com" value="${savedId}" style="font-size:13px;margin-bottom:8px"/>
+    <button class="btn-primary" style="width:100%;padding:11px" onclick="saveGdClientId()">Save Client ID</button>`;
+  document.getElementById('gdrive-actions')?.insertAdjacentElement('afterend', div);
+}
+
+function saveGdClientId(){
+  const val = document.getElementById('gd-client-id-input')?.value.trim();
+  if(!val){ showToast('Enter a Client ID first'); return; }
+  localStorage.setItem('bm_gd_client_id', val);
+  showToast('Client ID saved ✓');
+  document.getElementById('gdrive-setup-panel')?.remove();
+}
+
+// ─── Dropbox sync ─────────────────────────────────────────
+const DB_APP_KEY = localStorage.getItem('bm_db_app_key')||'';
+
+function dropboxSyncMenu(){
+  const existing = document.getElementById('dropbox-actions');
+  if(existing){ existing.remove(); return; }
+  const div = document.createElement('div');
+  div.id = 'dropbox-actions';
+  div.style.cssText = 'padding:0 0 8px;display:flex;flex-direction:column;gap:6px;';
+  div.innerHTML = `
+    <div style="font-size:13px;color:var(--g500);padding:8px 0 4px;font-weight:600">Dropbox sync</div>
+    <div style="font-size:12px;color:var(--g400);margin-bottom:6px;line-height:1.5">Saves <code>birthdaymate-sync.json</code> to your Dropbox Apps folder.</div>
+    <button class="btn-secondary" style="width:100%;margin-bottom:4px" onclick="dropboxSave()">☁️ Save to Dropbox</button>
+    <button class="btn-secondary" style="width:100%" onclick="dropboxLoad()">⬇️ Load from Dropbox</button>
+    <div style="font-size:11px;color:var(--g400);margin-top:6px;line-height:1.5">⚠ Requires a Dropbox App Key. See Setup below.</div>
+    <button class="btn-secondary" style="width:100%;margin-top:4px;font-size:12px" onclick="showDbSetup()">🔧 Dropbox Setup</button>`;
+  const row = document.querySelector('[onclick="dropboxSyncMenu()"]');
+  if(row) row.insertAdjacentElement('afterend', div);
+}
+
+async function dropboxGetToken(){
+  const appKey = localStorage.getItem('bm_db_app_key')||'';
+  if(!appKey){ showToast('Add your Dropbox App Key in Dropbox Setup first'); throw new Error('no-app-key'); }
+  const stored = localStorage.getItem('bm_db_token');
+  if(stored) return stored;
+  // PKCE flow
+  const verifier = Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b=>b.toString(16).padStart(2,'0')).join('');
+  const challenge = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  localStorage.setItem('bm_db_verifier', verifier);
+  localStorage.setItem('bm_db_return', 'save');
+  const redirect = encodeURIComponent(location.href.split('?')[0]);
+  window.location.href = `https://www.dropbox.com/oauth2/authorize?client_id=${appKey}&response_type=code&code_challenge=${challenge}&code_challenge_method=S256&redirect_uri=${redirect}&token_access_type=offline`;
+  throw new Error('redirecting');
+}
+
+async function dropboxSave(){
+  try{
+    const token = await dropboxGetToken();
+    const resp = await fetch('https://content.dropboxapi.com/2/files/upload', {
+      method:'POST',
+      headers:{Authorization:'Bearer '+token,'Dropbox-API-Arg':JSON.stringify({path:'/'+SYNC_FILE,mode:'overwrite'}),'Content-Type':'application/octet-stream'},
+      body: buildSyncPayload()
+    });
+    if(!resp.ok){ if(resp.status===401){localStorage.removeItem('bm_db_token');dropboxSave();return;} throw new Error(await resp.text()); }
+    localStorage.setItem('bm_lastsynced', new Date().toISOString()+'|'+(navigator.userAgent.includes('Android')?'Android':'Desktop'));
+    updateLastSynced();
+    showSyncStatus('Saved to Dropbox ✓');
+    document.getElementById('dropbox-actions')?.remove();
+  }catch(e){ if(e.message!=='redirecting') showSyncStatus('Dropbox save failed: '+e, false); }
+}
+
+async function dropboxLoad(){
+  try{
+    const token = await dropboxGetToken();
+    const resp = await fetch('https://content.dropboxapi.com/2/files/download', {
+      method:'POST',
+      headers:{Authorization:'Bearer '+token,'Dropbox-API-Arg':JSON.stringify({path:'/'+SYNC_FILE})}
+    });
+    if(resp.status===409){ showSyncStatus('No sync file found on Dropbox — save first', false); return; }
+    if(resp.status===401){ localStorage.removeItem('bm_db_token'); dropboxLoad(); return; }
+    if(!resp.ok) throw new Error(await resp.text());
+    applySyncPayload(await resp.text());
+    showSyncStatus(`Loaded ${contacts.length} contacts from Dropbox ✓`);
+    document.getElementById('dropbox-actions')?.remove();
+  }catch(e){ if(e.message!=='redirecting') showSyncStatus('Dropbox load failed: '+e, false); }
+}
+
+function showDbSetup(){
+  const existing = document.getElementById('db-setup-panel');
+  if(existing){ existing.remove(); return; }
+  const savedKey = localStorage.getItem('bm_db_app_key')||'';
+  const div = document.createElement('div');
+  div.id = 'db-setup-panel';
+  div.style.cssText = 'background:var(--g50);border-radius:var(--rs);padding:14px;margin-top:8px;font-size:13px;line-height:1.6;color:var(--g600)';
+  div.innerHTML = `
+    <div style="font-weight:600;margin-bottom:8px">Dropbox Setup</div>
+    <ol style="padding-left:16px;margin-bottom:10px">
+      <li>Go to <a href="https://www.dropbox.com/developers/apps" target="_blank" style="color:var(--purple)">dropbox.com/developers/apps</a></li>
+      <li>Create app → Scoped access → Full Dropbox</li>
+      <li>Name it (e.g. BirthdayMate)</li>
+      <li>Under Settings, copy the <b>App key</b></li>
+      <li>Add your app URL to <b>OAuth 2 Redirect URIs</b></li>
+      <li>Paste App key below</li>
+    </ol>
+    <input class="fc" id="db-app-key-input" placeholder="Dropbox App key" value="${savedKey}" style="font-size:13px;margin-bottom:8px"/>
+    <button class="btn-primary" style="width:100%;padding:11px" onclick="saveDbAppKey()">Save App Key</button>`;
+  document.getElementById('dropbox-actions')?.insertAdjacentElement('afterend', div);
+}
+
+function saveDbAppKey(){
+  const val = document.getElementById('db-app-key-input')?.value.trim();
+  if(!val){ showToast('Enter an App Key first'); return; }
+  localStorage.setItem('bm_db_app_key', val);
+  showToast('App Key saved ✓');
+  document.getElementById('db-setup-panel')?.remove();
+}
+
+// Handle Dropbox OAuth redirect back
+function checkDropboxReturn(){
+  const params = new URLSearchParams(location.search);
+  const code = params.get('code');
+  if(!code) return;
+  const appKey = localStorage.getItem('bm_db_app_key')||'';
+  const verifier = localStorage.getItem('bm_db_verifier')||'';
+  if(!appKey||!verifier) return;
+  const redirect = location.href.split('?')[0];
+  fetch('https://api.dropboxapi.com/oauth2/token', {
+    method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:`code=${code}&grant_type=authorization_code&client_id=${appKey}&code_verifier=${verifier}&redirect_uri=${encodeURIComponent(redirect)}`
+  }).then(r=>r.json()).then(d=>{
+    if(d.access_token){
+      localStorage.setItem('bm_db_token', d.access_token);
+      localStorage.removeItem('bm_db_verifier');
+      history.replaceState({}, document.title, redirect);
+      const action = localStorage.getItem('bm_db_return')||'save';
+      localStorage.removeItem('bm_db_return');
+      if(action==='save') dropboxSave(); else dropboxLoad();
+    }
+  }).catch(e=>showSyncStatus('Dropbox auth failed: '+e, false));
+}
+
+function loadScript(src, cb){ const s=document.createElement('script'); s.src=src; s.onload=cb; document.head.appendChild(s); }
+
+// ─── Seed ─────────────────────────────────────────────────
+function seedIfEmpty(){
+  if(contacts.length)return;
+  const t=today();const m=String(t.m).padStart(2,'0');const d=String(t.d).padStart(2,'0');
+  contacts=[
+    {id:uid(),name:'Sample Sister',nick:'Sis',date:`1992-${m}-${d}`,rel:'Sister',wa:'',email:'',gender:'Female',notes:'Loves gospel music and cooking'},
+    {id:uid(),name:'John Cousin',nick:'Johnny',date:`1988-${m}-${String(Math.min(t.d+3,28)).padStart(2,'0')}`,rel:'Cousin',wa:'',email:'john@example.com',gender:'Male',notes:'Big cricket fan'},
+  ];
+  persist();
+}
+
+checkDropboxReturn();
+seedIfEmpty();
+init();
+</script>
+</body>
+</html>
