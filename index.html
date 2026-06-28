@@ -557,7 +557,7 @@ audio{display:none}
           </div>
           <div class="s-text">
             <div class="s-label">Google Drive sync</div>
-            <div class="s-sub" id="gdrive-sub">Save &amp; load from your Google Drive</div>
+            <div class="s-sub" id="gdrive-sub">Sync with your Google account</div>
           </div>
           <span style="color:var(--g300)">›</span>
         </div>
@@ -1273,7 +1273,7 @@ function importData(e){
 
 // ─── Google Drive sync ────────────────────────────────────
 // Uses Google Picker + Drive REST API via GIS (no backend needed)
-const GD_CLIENT_ID = localStorage.getItem('bm_gd_client_id')||'YOUR_GOOGLE_CLIENT_ID';
+const GD_CLIENT_ID = '552263098110-n81c47oeutghs0tefn1sm4t496j3m8rj.apps.googleusercontent.com';
 const GD_SCOPE = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
 let gdToken = null;
 
@@ -1289,17 +1289,14 @@ function gdriveSyncMenu(){
     <div style="font-size:13px;color:var(--g500);padding:8px 0 4px;font-weight:600">Google Drive sync</div>
     <div style="font-size:12px;color:var(--g400);margin-bottom:6px;line-height:1.5">Saves a file called <code>birthdaymate-sync.json</code> in your Google Drive. Sign in with the same Google account on both devices.</div>
     <button class="btn-secondary" style="width:100%;margin-bottom:4px" onclick="gdriveSignInAndSave()">☁️ Save to Google Drive</button>
-    <button class="btn-secondary" style="width:100%" onclick="gdriveSignInAndLoad()">⬇️ Load from Google Drive</button>
-    <div style="font-size:11px;color:var(--g400);margin-top:6px;line-height:1.5">⚠ Requires a Google Cloud OAuth Client ID.<br>See Settings → Google Drive Setup for instructions.</div>
-    <button class="btn-secondary" style="width:100%;margin-top:4px;font-size:12px" onclick="showGdSetup()">🔧 Google Drive Setup</button>`;
+    <button class="btn-secondary" style="width:100%" onclick="gdriveSignInAndLoad()">⬇️ Load from Google Drive</button>`;
   const row = document.querySelector('[onclick="gdriveSyncMenu()"]');
   if(row) row.insertAdjacentElement('afterend', div);
 }
 
 async function gdriveGetToken(){
   return new Promise((resolve, reject) => {
-    const clientId = localStorage.getItem('bm_gd_client_id')||'';
-    if(!clientId){ showToast('Add your Google Client ID in Drive Setup first'); reject('no-client-id'); return; }
+    const clientId = GD_CLIENT_ID;
     if(!window.google){ loadScript('https://accounts.google.com/gsi/client', ()=>gdriveGetToken().then(resolve).catch(reject)); return; }
     const client = google.accounts.oauth2.initTokenClient({
       client_id: clientId,
@@ -1367,35 +1364,6 @@ async function gdriveLoadFile(token){
   return await resp.text();
 }
 
-function showGdSetup(){
-  const existing = document.getElementById('gdrive-setup-panel');
-  if(existing){ existing.remove(); return; }
-  const savedId = localStorage.getItem('bm_gd_client_id')||'';
-  const div = document.createElement('div');
-  div.id = 'gdrive-setup-panel';
-  div.style.cssText = 'background:var(--g50);border-radius:var(--rs);padding:14px;margin-top:8px;font-size:13px;line-height:1.6;color:var(--g600)';
-  div.innerHTML = `
-    <div style="font-weight:600;margin-bottom:8px">Google Drive Setup</div>
-    <ol style="padding-left:16px;margin-bottom:10px">
-      <li>Go to <a href="https://console.cloud.google.com" target="_blank" style="color:var(--purple)">console.cloud.google.com</a></li>
-      <li>Create a project → Enable <b>Google Drive API</b></li>
-      <li>OAuth consent screen → External → Add your email</li>
-      <li>Credentials → Create OAuth 2.0 Client ID → Web application</li>
-      <li>Add <code>https://liobon.github.io/birthdaymate</code> to <b>Authorised JavaScript Origins</b></li>
-      <li>Copy the Client ID and paste below</li>
-    </ol>
-    <input class="fc" id="gd-client-id-input" placeholder="paste-your-client-id.apps.googleusercontent.com" value="${savedId}" style="font-size:13px;margin-bottom:8px"/>
-    <button class="btn-primary" style="width:100%;padding:11px" onclick="saveGdClientId()">Save Client ID</button>`;
-  document.getElementById('gdrive-actions')?.insertAdjacentElement('afterend', div);
-}
-
-function saveGdClientId(){
-  const val = document.getElementById('gd-client-id-input')?.value.trim();
-  if(!val){ showToast('Enter a Client ID first'); return; }
-  localStorage.setItem('bm_gd_client_id', val);
-  showToast('Client ID saved ✓');
-  document.getElementById('gdrive-setup-panel')?.remove();
-}
 
 // ─── Dropbox sync ─────────────────────────────────────────
 const DB_APP_KEY = localStorage.getItem('bm_db_app_key')||'';
