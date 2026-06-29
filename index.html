@@ -1274,7 +1274,7 @@ function importData(e){
 // ─── Google Drive sync ────────────────────────────────────
 // Uses Google Picker + Drive REST API via GIS (no backend needed)
 const GD_CLIENT_ID = '552263098110-n81c47oeutghs0tefn1sm4t496j3m8rj.apps.googleusercontent.com';
-const GD_SCOPE = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
+const GD_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
 let gdToken = null;
 
 function gdriveSyncMenu(){
@@ -1294,20 +1294,45 @@ function gdriveSyncMenu(){
   if(row) row.insertAdjacentElement('afterend', div);
 }
 
+function gdriveLoadGIS(){
+  return new Promise((resolve) => {
+    if(window.google && window.google.accounts){ resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true; s.defer = true;
+    s.onload = () => resolve();
+    s.onerror = () => resolve(); // fail gracefully
+    document.head.appendChild(s);
+  });
+}
+
 async function gdriveGetToken(){
+  // Reuse token if we already have one
+  if(gdToken){ return gdToken; }
+  await gdriveLoadGIS();
+  if(!window.google || !window.google.accounts){
+    throw new Error('Google Sign-In script failed to load. Check your internet connection.');
+  }
   return new Promise((resolve, reject) => {
-    const clientId = GD_CLIENT_ID;
-    if(!window.google){ loadScript('https://accounts.google.com/gsi/client', ()=>gdriveGetToken().then(resolve).catch(reject)); return; }
     const client = google.accounts.oauth2.initTokenClient({
-      client_id: clientId,
+      client_id: GD_CLIENT_ID,
       scope: GD_SCOPE,
+      prompt: '',
       callback: (resp) => {
-        if(resp.error){ reject(resp.error); return; }
+        if(resp.error || !resp.access_token){
+          reject(new Error(resp.error || 'No token returned'));
+          return;
+        }
         gdToken = resp.access_token;
+        // Auto-expire token after 55 minutes
+        setTimeout(() => { gdToken = null; }, 55 * 60 * 1000);
         resolve(gdToken);
+      },
+      error_callback: (err) => {
+        reject(new Error(err.type || 'Sign-in cancelled'));
       }
     });
-    client.requestAccessToken();
+    client.requestAccessToken({prompt: 'select_account'});
   });
 }
 
@@ -1320,7 +1345,7 @@ async function gdriveSignInAndSave(){
     updateLastSynced();
     showSyncStatus('Saved to Google Drive ✓');
     document.getElementById('gdrive-actions')?.remove();
-  }catch(e){ showSyncStatus('Google Drive save failed: '+e, false); }
+  }catch(e){ gdToken=null; showSyncStatus('Save failed: '+e.message, false); }
 }
 
 async function gdriveSignInAndLoad(){
@@ -1332,35 +1357,50 @@ async function gdriveSignInAndLoad(){
     applySyncPayload(data);
     showSyncStatus(`Loaded ${contacts.length} contacts from Google Drive ✓`);
     document.getElementById('gdrive-actions')?.remove();
-  }catch(e){ showSyncStatus('Google Drive load failed: '+e, false); }
+  }catch(e){ gdToken=null; showSyncStatus('Load failed: '+e.message, false); }
 }
 
-async function gdriveSaveFile(token, content){
-  // Find or create file
-  const searchResp = await fetch('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%22'+SYNC_FILE+'%22', {headers:{Authorization:'Bearer '+token}});
+async function gdriveSaveFile(token, fileContent){
+  // Search in appDataFolder
+  const q = encodeURIComponent(`name='${SYNC_FILE}'`);
+  const searchResp = await fetch(
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id,name)`,
+    {headers:{Authorization:'Bearer '+token}}
+  );
+  if(!searchResp.ok) throw new Error('Search failed: '+await searchResp.text());
   const searchData = await searchResp.json();
   const fileId = searchData.files?.[0]?.id;
 
-  const metadata = {name: SYNC_FILE, parents: fileId ? undefined : ['appDataFolder']};
+  const metadata = JSON.stringify(
+    fileId ? {name: SYNC_FILE} : {name: SYNC_FILE, parents: ['appDataFolder']}
+  );
   const form = new FormData();
-  form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
-  form.append('file', new Blob([content], {type:'application/json'}));
+  form.append('metadata', new Blob([metadata], {type:'application/json'}));
+  form.append('file', new Blob([fileContent], {type:'application/json'}));
 
   const url = fileId
-    ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
-    : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+    ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart&fields=id`
+    : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id`;
   const method = fileId ? 'PATCH' : 'POST';
   const resp = await fetch(url, {method, headers:{Authorization:'Bearer '+token}, body:form});
-  if(!resp.ok) throw new Error(await resp.text());
+  if(!resp.ok) throw new Error('Save failed: '+await resp.text());
 }
 
 async function gdriveLoadFile(token){
-  const searchResp = await fetch('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%22'+SYNC_FILE+'%22', {headers:{Authorization:'Bearer '+token}});
+  const q = encodeURIComponent(`name='${SYNC_FILE}'`);
+  const searchResp = await fetch(
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id,name)`,
+    {headers:{Authorization:'Bearer '+token}}
+  );
+  if(!searchResp.ok) throw new Error('Search failed: '+await searchResp.text());
   const searchData = await searchResp.json();
   const fileId = searchData.files?.[0]?.id;
   if(!fileId) return null;
-  const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {headers:{Authorization:'Bearer '+token}});
-  if(!resp.ok) throw new Error(await resp.text());
+  const resp = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+    {headers:{Authorization:'Bearer '+token}}
+  );
+  if(!resp.ok) throw new Error('Load failed: '+await resp.text());
   return await resp.text();
 }
 
