@@ -520,6 +520,11 @@ audio{display:none}
             <option value="0">Off</option><option value="1">1 day</option><option value="3" selected>3 days</option><option value="7">7 days</option>
           </select>
         </div>
+        <div class="s-row">
+          <div class="s-ico" style="background:#EFF6FF">🔄</div>
+          <div class="s-text"><div class="s-label">Auto-sync with Drive</div><div class="s-sub">Load on open, save in background</div></div>
+          <label class="toggle"><input type="checkbox" id="s-autosync" checked onchange="toggleAutoSync(this.checked)"><span class="tslider"></span></label>
+        </div>
       </div>
     </div>
     <div style="margin-bottom:16px">
@@ -610,6 +615,10 @@ let audioObjectUrl = '';
 let currentMusicMode = 'none';
 let currentMsgMode = 'ai';
 let selectedTheme = 0;
+let autoSyncEnabled = true;
+let autoSyncTimer = null;
+let autoSyncInFlight = false;
+let autoSyncDirty = false;
 
 // ─── Colour palette ───────────────────────────────────────
 const AVATARS=[['#EDE9FE','#7C3AED'],['#FDF2F8','#EC4899'],['#FFFBEB','#F59E0B'],
@@ -658,12 +667,20 @@ function applySettings(){
   document.getElementById('s-remind').value=settings.remind||'3';
   document.getElementById('s-myname').value=settings.myname||'';
   document.getElementById('s-apikey').value=settings.apikey||'';
+  document.getElementById('s-autosync').checked=settings.autosync!==false;
+  autoSyncEnabled = settings.autosync!==false;
+}
+
+function toggleAutoSync(val){
+  autoSyncEnabled = val;
+  saveSetting('autosync', val);
+  showToast(val ? 'Auto-sync enabled' : 'Auto-sync disabled');
 }
 function toggleKeyVis(){
   const el=document.getElementById('s-apikey');
   el.type=el.type==='password'?'text':'password';
 }
-function saveSetting(k,v){settings[k]=v;localStorage.setItem('bm_settings',JSON.stringify(settings))}
+function saveSetting(k,v){settings[k]=v;localStorage.setItem('bm_settings',JSON.stringify(settings));autoSyncQueue()}
 
 // ─── Tabs ─────────────────────────────────────────────────
 function switchTab(tab){
@@ -819,7 +836,7 @@ function deleteContact(id){
   renderHome();renderUpcoming();renderContacts();
   showToast('Contact removed');
 }
-function persist(){localStorage.setItem('bm_contacts',JSON.stringify(contacts))}
+function persist(){localStorage.setItem('bm_contacts',JSON.stringify(contacts));autoSyncQueue()}
 
 // ─── Card Studio ──────────────────────────────────────────
 function openStudio(id){
@@ -1336,6 +1353,95 @@ async function gdriveGetToken(){
   });
 }
 
+// ─── Auto-sync engine ──────────────────────────────────────
+// Silent load on open, debounced save on change, save on leave.
+function isAutoSyncReady(){
+  // Only auto-sync if we have a usable token already, or can get one silently.
+  // We avoid forcing a sign-in popup automatically — that would be intrusive.
+  return autoSyncEnabled;
+}
+
+function autoSyncQueue(){
+  if(!isAutoSyncReady()) return;
+  autoSyncDirty = true;
+  clearTimeout(autoSyncTimer);
+  autoSyncTimer = setTimeout(autoSyncSaveNow, 2500); // debounce 2.5s after last change
+}
+
+async function autoSyncSaveNow(silent=true){
+  if(!autoSyncDirty || autoSyncInFlight) return;
+  if(!gdToken){
+    // No active session — don't force a popup during background autosave.
+    // User can tap Save manually in Settings to (re)establish the session.
+    return;
+  }
+  autoSyncInFlight = true;
+  try{
+    await gdriveSaveFile(gdToken, buildSyncPayload());
+    autoSyncDirty = false;
+    localStorage.setItem('bm_lastsynced', new Date().toISOString()+'|'+(navigator.userAgent.includes('Android')?'Android':'Desktop'));
+    updateLastSynced();
+    if(!silent) showSyncStatus('Saved to Google Drive ✓');
+  }catch(e){
+    // Fail silently in background; will retry on next change or app open
+  }finally{
+    autoSyncInFlight = false;
+  }
+}
+
+async function autoSyncLoadOnOpen(){
+  try{
+    // Try to get a token without an intrusive prompt — only works if a
+    // Google session is already cached by the browser/device.
+    await gdriveLoadGIS();
+    if(!window.google || !window.google.accounts) return;
+
+    const token = await new Promise((resolve) => {
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: GD_CLIENT_ID,
+        scope: GD_SCOPE,
+        prompt: '', // silent — no popup if a session already exists
+        callback: (resp) => resolve(resp.access_token || null),
+        error_callback: () => resolve(null)
+      });
+      client.requestAccessToken({prompt: ''});
+    });
+
+    if(!token) return; // no cached session — stay quiet, user can tap Load manually
+    gdToken = token;
+    setTimeout(() => { gdToken = null; }, 55 * 60 * 1000);
+
+    const cloudRaw = await gdriveLoadFile(token);
+    if(!cloudRaw) return; // nothing saved yet
+
+    const cloudData = JSON.parse(cloudRaw);
+    const cloudTime = cloudData.syncedAt ? new Date(cloudData.syncedAt).getTime() : 0;
+    const localRaw = localStorage.getItem('bm_lastsynced');
+    const localTime = localRaw ? new Date(localRaw.split('|')[0]).getTime() : 0;
+
+    if(cloudTime > localTime){
+      applySyncPayload(cloudRaw);
+      showToast('☁️ Synced latest data from Google Drive');
+    }
+  }catch(e){
+    // Silent — this runs automatically on open, errors shouldn't interrupt the user
+  }
+}
+
+function setupAutoSyncLifecycle(){
+  // Save when the user leaves: backgrounding the tab, switching apps, locking screen.
+  // visibilitychange is the most reliable signal on mobile (beforeunload is not).
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'hidden' && autoSyncDirty){
+      autoSyncSaveNow(true);
+    }
+  });
+  // Also catch pagehide as a fallback for some browsers
+  window.addEventListener('pagehide', () => {
+    if(autoSyncDirty) autoSyncSaveNow(true);
+  });
+}
+
 async function gdriveSignInAndSave(){
   try{
     showToast('Connecting to Google…');
@@ -1543,6 +1649,8 @@ function seedIfEmpty(){
 checkDropboxReturn();
 seedIfEmpty();
 init();
+setupAutoSyncLifecycle();
+autoSyncLoadOnOpen();
 </script>
 </body>
 </html>
