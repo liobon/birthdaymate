@@ -204,7 +204,10 @@ audio{display:none}
     <div class="topbar-title">🎂 BirthdayMate</div>
     <div class="topbar-sub" id="topbar-date"></div>
   </div>
-  <button class="icon-btn" onclick="openModal('modal-settings')" title="Settings">⚙️</button>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="icon-btn" onclick="openModal('modal-settings')" title="Settings">⚙️</button>
+    <button class="icon-btn" onclick="closeApp()" title="Close app" style="background:rgba(255,255,255,0.20)">✕</button>
+  </div>
 </div>
 
 <!-- Tabbar -->
@@ -506,6 +509,17 @@ audio{display:none}
   <div class="modal">
     <div class="handle"></div>
     <div class="modal-title">Settings</div>
+
+    <!-- Owner profile card -->
+    <div style="background:linear-gradient(135deg,var(--purple),var(--pink));border-radius:var(--r);padding:20px;margin-bottom:20px;color:#fff;display:flex;align-items:center;gap:16px">
+      <div id="owner-avatar" style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;flex-shrink:0">?</div>
+      <div style="flex:1;min-width:0">
+        <div id="owner-name-display" style="font-size:18px;font-weight:800;letter-spacing:-.3px">Set your name</div>
+        <div id="owner-tagline" style="font-size:12px;opacity:.8;margin-top:2px">BirthdayMate owner</div>
+      </div>
+      <button onclick="openOwnerEdit()" style="background:rgba(255,255,255,0.2);border:none;border-radius:var(--rs);color:#fff;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer">Edit</button>
+    </div>
+
     <div style="margin-bottom:16px">
       <div class="s-card">
         <div class="s-row">
@@ -597,6 +611,46 @@ audio{display:none}
   </div>
 </div>
 
+<!-- Owner edit modal -->
+<div class="overlay" id="modal-owner">
+  <div class="modal">
+    <div class="handle"></div>
+    <div class="modal-title">Your profile</div>
+    <div class="fg">
+      <label class="fl">Your full name *</label>
+      <input class="fc" id="owner-name-input" placeholder="e.g. Lionel Bonner"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Tagline (optional)</label>
+      <input class="fc" id="owner-tagline-input" placeholder="e.g. Family birthday keeper"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Initials (for avatar)</label>
+      <input class="fc" id="owner-initials-input" placeholder="e.g. LB" maxlength="3" style="text-transform:uppercase"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-owner')">Cancel</button>
+      <button class="btn-primary" onclick="saveOwnerProfile()">Save profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- Close app confirmation modal -->
+<div class="overlay" id="modal-close-app">
+  <div class="modal">
+    <div class="handle"></div>
+    <div class="modal-title">Close BirthdayMate</div>
+    <div style="font-size:15px;color:var(--g600);line-height:1.6;margin-bottom:20px">
+      Save your data to Google Drive before closing?
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn-primary" id="close-save-btn" onclick="closeAppWithSave()">☁️ Save to Drive &amp; Close</button>
+      <button class="chip chip-gray" style="justify-content:center;padding:13px;font-size:15px;border-radius:var(--rs)" onclick="closeAppNoSave()">Close without saving</button>
+      <button class="btn-cancel" style="text-align:center;border-radius:var(--rs);padding:12px" onclick="closeModal('modal-close-app')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ─── App config ──────────────────────────────────────────
 const APP_URL = 'https://liobon.github.io/birthdaymate';
@@ -658,14 +712,91 @@ function init(){
   document.getElementById('banner-date').textContent=fmtFull(now);
   applySettings();
   buildThemeGrid();
+  renderOwnerProfile();
   renderHome();renderUpcoming();renderContacts();
   updateLastSynced();
+}
+
+// ─── Owner profile ────────────────────────────────────────
+function renderOwnerProfile(){
+  const name = settings.ownerName || '';
+  const tagline = settings.ownerTagline || 'BirthdayMate owner';
+  const initials = settings.ownerInitials || (name ? name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase() : '?');
+  const el = document.getElementById('owner-avatar');
+  const nd = document.getElementById('owner-name-display');
+  const tl = document.getElementById('owner-tagline');
+  if(el) el.textContent = initials;
+  if(nd) nd.textContent = name || 'Set your name';
+  if(tl) tl.textContent = tagline;
+  // Also update topbar subtitle with owner name
+  if(name) document.getElementById('topbar-date').setAttribute('data-owner', name);
+}
+
+function openOwnerEdit(){
+  document.getElementById('owner-name-input').value = settings.ownerName || '';
+  document.getElementById('owner-tagline-input').value = settings.ownerTagline || '';
+  document.getElementById('owner-initials-input').value = settings.ownerInitials || '';
+  openModal('modal-owner');
+}
+
+function saveOwnerProfile(){
+  const name = document.getElementById('owner-name-input').value.trim();
+  if(!name){ showToast('Please enter your name'); return; }
+  settings.ownerName = name;
+  settings.ownerTagline = document.getElementById('owner-tagline-input').value.trim() || 'BirthdayMate owner';
+  const rawInitials = document.getElementById('owner-initials-input').value.trim().toUpperCase();
+  settings.ownerInitials = rawInitials || name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  // Also sync as the signing name
+  if(!settings.myname) settings.myname = name;
+  localStorage.setItem('bm_settings', JSON.stringify(settings));
+  applySettings();
+  renderOwnerProfile();
+  closeModal('modal-owner');
+  autoSyncQueue();
+  showToast('Profile saved ✓');
+}
+
+// ─── Close app ────────────────────────────────────────────
+function closeApp(){
+  openModal('modal-close-app');
+  // Update button state based on whether we have a Drive token
+  const btn = document.getElementById('close-save-btn');
+  if(!gdriveRestoreToken()){
+    btn.textContent = '☁️ Sign in to Drive & Save';
+  } else {
+    btn.textContent = '☁️ Save to Drive & Close';
+  }
+}
+
+async function closeAppWithSave(){
+  const btn = document.getElementById('close-save-btn');
+  btn.textContent = '⏳ Saving…';
+  btn.disabled = true;
+  try{
+    const token = await gdriveGetToken('autosave');
+    if(!token) return; // redirecting to Google — will resume after
+    await gdriveSaveFile(token, buildSyncPayload());
+    autoSyncDirty = false;
+    localStorage.setItem('bm_lastsynced', new Date().toISOString()+'|'+(navigator.userAgent.includes('Android')?'Android':'Desktop'));
+    updateLastSynced();
+    closeModal('modal-close-app');
+    showToast('Saved ✓ — you can now close the app');
+  }catch(e){
+    btn.textContent = '☁️ Save to Drive & Close';
+    btn.disabled = false;
+    showSyncStatus('Save failed: '+e.message, false);
+  }
+}
+
+function closeAppNoSave(){
+  closeModal('modal-close-app');
+  showToast('Tip: use your browser back/home button to close');
 }
 
 function applySettings(){
   document.getElementById('s-ai').checked=settings.ai!==false;
   document.getElementById('s-remind').value=settings.remind||'3';
-  document.getElementById('s-myname').value=settings.myname||'';
+  document.getElementById('s-myname').value=settings.myname||settings.ownerName||'';
   document.getElementById('s-apikey').value=settings.apikey||'';
   document.getElementById('s-autosync').checked=settings.autosync!==false;
   autoSyncEnabled = settings.autosync!==false;
@@ -1304,77 +1435,83 @@ function gdriveSyncMenu(){
   div.style.cssText = 'padding:0 0 8px;display:flex;flex-direction:column;gap:6px;';
   div.innerHTML = `
     <div style="font-size:13px;color:var(--g500);padding:8px 0 4px;font-weight:600">Google Drive sync</div>
-    <div style="font-size:12px;color:var(--g400);margin-bottom:6px;line-height:1.5">Saves a file called <code>birthdaymate-sync.json</code> in your Google Drive. Sign in with the same Google account on both devices.</div>
+    <div style="font-size:12px;color:var(--g400);margin-bottom:6px;line-height:1.5">Saves <code>birthdaymate-sync.json</code> in your Google Drive. Uses a secure sign-in redirect — you will briefly leave the app and return automatically.</div>
+    <div style="font-size:11px;color:var(--g400);background:var(--g50);border-radius:var(--rs);padding:8px;margin-bottom:8px;line-height:1.5">⚙️ In Google Cloud Console → Credentials → your OAuth Client → add <b>Authorised redirect URI</b>: <code>https://liobon.github.io/birthdaymate</code></div>
     <button class="btn-secondary" style="width:100%;margin-bottom:4px" onclick="gdriveSignInAndSave()">☁️ Save to Google Drive</button>
     <button class="btn-secondary" style="width:100%" onclick="gdriveSignInAndLoad()">⬇️ Load from Google Drive</button>`;
   const row = document.querySelector('[onclick="gdriveSyncMenu()"]');
   if(row) row.insertAdjacentElement('afterend', div);
 }
 
-function gdriveLoadGIS(){
-  return new Promise((resolve) => {
-    if(window.google && window.google.accounts){ resolve(); return; }
-    const s = document.createElement('script');
-    s.src = 'https://accounts.google.com/gsi/client';
-    s.async = true; s.defer = true;
-    s.onload = () => resolve();
-    s.onerror = () => resolve(); // fail gracefully
-    document.head.appendChild(s);
+// ─── Google OAuth — redirect-based (reliable on Android) ──────────────────
+// Uses the OAuth2 implicit grant with a full page redirect.
+// No popups, no blank screens. Token is stored in sessionStorage
+// and recovered when the page reloads after the Google redirect.
+
+function gdriveAuthUrl(){
+  const params = new URLSearchParams({
+    client_id: GD_CLIENT_ID,
+    redirect_uri: APP_URL,
+    response_type: 'token',
+    scope: GD_SCOPE,
+    include_granted_scopes: 'true',
   });
+  return 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
 }
 
-async function gdriveGetToken(){
-  // Reuse token if we already have one
-  if(gdToken){ return gdToken; }
-  await gdriveLoadGIS();
-  if(!window.google || !window.google.accounts){
-    throw new Error('Google Sign-In script failed to load. Check your internet connection.');
+function gdriveSaveTokenFromHash(){
+  // Called on page load to catch the token Google sends back in the URL hash
+  const hash = window.location.hash;
+  if(!hash) return false;
+  const params = new URLSearchParams(hash.slice(1));
+  const token = params.get('access_token');
+  const expiresIn = parseInt(params.get('expires_in')||'3600');
+  if(!token) return false;
+  gdToken = token;
+  sessionStorage.setItem('bm_gd_token', token);
+  sessionStorage.setItem('bm_gd_expires', (Date.now() + (expiresIn-60)*1000).toString());
+  // Clean the hash from the URL without reloading
+  history.replaceState(null, '', window.location.pathname);
+  return true;
+}
+
+function gdriveRestoreToken(){
+  if(gdToken) return true;
+  const token = sessionStorage.getItem('bm_gd_token');
+  const expires = parseInt(sessionStorage.getItem('bm_gd_expires')||'0');
+  if(token && Date.now() < expires){
+    gdToken = token;
+    return true;
   }
-  return new Promise((resolve, reject) => {
-    const client = google.accounts.oauth2.initTokenClient({
-      client_id: GD_CLIENT_ID,
-      scope: GD_SCOPE,
-      prompt: '',
-      callback: (resp) => {
-        if(resp.error || !resp.access_token){
-          reject(new Error(resp.error || 'No token returned'));
-          return;
-        }
-        gdToken = resp.access_token;
-        // Auto-expire token after 55 minutes
-        setTimeout(() => { gdToken = null; }, 55 * 60 * 1000);
-        resolve(gdToken);
-      },
-      error_callback: (err) => {
-        reject(new Error(err.type || 'Sign-in cancelled'));
-      }
-    });
-    client.requestAccessToken({prompt: 'select_account'});
-  });
+  sessionStorage.removeItem('bm_gd_token');
+  sessionStorage.removeItem('bm_gd_expires');
+  return false;
 }
 
-// ─── Auto-sync engine ──────────────────────────────────────
-// Silent load on open, debounced save on change, save on leave.
-function isAutoSyncReady(){
-  // Only auto-sync if we have a usable token already, or can get one silently.
-  // We avoid forcing a sign-in popup automatically — that would be intrusive.
-  return autoSyncEnabled;
+function gdriveSignIn(pendingAction){
+  // Save what we were trying to do so we can resume after redirect
+  if(pendingAction) sessionStorage.setItem('bm_gd_pending', pendingAction);
+  window.location.href = gdriveAuthUrl();
 }
 
+async function gdriveGetToken(pendingAction){
+  if(gdriveRestoreToken()) return gdToken;
+  // No valid token — redirect to Google sign-in
+  gdriveSignIn(pendingAction);
+  return null; // page will redirect, so this never continues
+}
+
+// ─── Auto-sync engine ──────────────────────────────────────────────────────
 function autoSyncQueue(){
-  if(!isAutoSyncReady()) return;
+  if(!autoSyncEnabled) return;
   autoSyncDirty = true;
   clearTimeout(autoSyncTimer);
-  autoSyncTimer = setTimeout(autoSyncSaveNow, 2500); // debounce 2.5s after last change
+  autoSyncTimer = setTimeout(()=>autoSyncSaveNow(true), 2500);
 }
 
 async function autoSyncSaveNow(silent=true){
   if(!autoSyncDirty || autoSyncInFlight) return;
-  if(!gdToken){
-    // No active session — don't force a popup during background autosave.
-    // User can tap Save manually in Settings to (re)establish the session.
-    return;
-  }
+  if(!gdriveRestoreToken()) return; // no token — skip silently
   autoSyncInFlight = true;
   try{
     await gdriveSaveFile(gdToken, buildSyncPayload());
@@ -1383,85 +1520,76 @@ async function autoSyncSaveNow(silent=true){
     updateLastSynced();
     if(!silent) showSyncStatus('Saved to Google Drive ✓');
   }catch(e){
-    // Fail silently in background; will retry on next change or app open
+    gdToken = null; // force re-auth next time
   }finally{
     autoSyncInFlight = false;
   }
 }
 
 async function autoSyncLoadOnOpen(){
+  if(!autoSyncEnabled) return;
+  if(!gdriveRestoreToken()) return; // no cached token — stay silent
   try{
-    // Try to get a token without an intrusive prompt — only works if a
-    // Google session is already cached by the browser/device.
-    await gdriveLoadGIS();
-    if(!window.google || !window.google.accounts) return;
-
-    const token = await new Promise((resolve) => {
-      const client = google.accounts.oauth2.initTokenClient({
-        client_id: GD_CLIENT_ID,
-        scope: GD_SCOPE,
-        prompt: '', // silent — no popup if a session already exists
-        callback: (resp) => resolve(resp.access_token || null),
-        error_callback: () => resolve(null)
-      });
-      client.requestAccessToken({prompt: ''});
-    });
-
-    if(!token) return; // no cached session — stay quiet, user can tap Load manually
-    gdToken = token;
-    setTimeout(() => { gdToken = null; }, 55 * 60 * 1000);
-
-    const cloudRaw = await gdriveLoadFile(token);
-    if(!cloudRaw) return; // nothing saved yet
-
+    const cloudRaw = await gdriveLoadFile(gdToken);
+    if(!cloudRaw) return;
     const cloudData = JSON.parse(cloudRaw);
     const cloudTime = cloudData.syncedAt ? new Date(cloudData.syncedAt).getTime() : 0;
     const localRaw = localStorage.getItem('bm_lastsynced');
     const localTime = localRaw ? new Date(localRaw.split('|')[0]).getTime() : 0;
-
     if(cloudTime > localTime){
       applySyncPayload(cloudRaw);
       showToast('☁️ Synced latest data from Google Drive');
     }
   }catch(e){
-    // Silent — this runs automatically on open, errors shouldn't interrupt the user
+    // Silent on open errors
+  }
+}
+
+async function handlePendingGdriveAction(){
+  // After returning from Google sign-in, resume what user wanted to do
+  const action = sessionStorage.getItem('bm_gd_pending');
+  if(!action) return;
+  sessionStorage.removeItem('bm_gd_pending');
+  if(!gdriveRestoreToken()) return;
+  if(action === 'save') await gdriveSignInAndSave();
+  else if(action === 'load') await gdriveSignInAndLoad();
+  else if(action === 'autosave'){
+    await autoSyncSaveNow(false);
+    showSyncStatus('Saved to Google Drive ✓');
   }
 }
 
 function setupAutoSyncLifecycle(){
-  // Save when the user leaves: backgrounding the tab, switching apps, locking screen.
-  // visibilitychange is the most reliable signal on mobile (beforeunload is not).
-  document.addEventListener('visibilitychange', () => {
-    if(document.visibilityState === 'hidden' && autoSyncDirty){
-      autoSyncSaveNow(true);
-    }
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'hidden' && autoSyncDirty) autoSyncSaveNow(true);
   });
-  // Also catch pagehide as a fallback for some browsers
-  window.addEventListener('pagehide', () => {
+  window.addEventListener('pagehide', ()=>{
     if(autoSyncDirty) autoSyncSaveNow(true);
   });
 }
 
 async function gdriveSignInAndSave(){
+  const token = await gdriveGetToken('save');
+  if(!token) return; // redirecting to Google
   try{
-    showToast('Connecting to Google…');
-    const token = await gdriveGetToken();
     await gdriveSaveFile(token, buildSyncPayload());
     localStorage.setItem('bm_lastsynced', new Date().toISOString()+'|'+(navigator.userAgent.includes('Android')?'Android':'Desktop'));
     updateLastSynced();
+    autoSyncDirty = false;
     showSyncStatus('Saved to Google Drive ✓');
     document.getElementById('gdrive-actions')?.remove();
   }catch(e){ gdToken=null; showSyncStatus('Save failed: '+e.message, false); }
 }
 
 async function gdriveSignInAndLoad(){
+  const token = await gdriveGetToken('load');
+  if(!token) return; // redirecting to Google
   try{
-    showToast('Connecting to Google…');
-    const token = await gdriveGetToken();
+    showToast('Loading from Google Drive…');
     const data = await gdriveLoadFile(token);
     if(!data){ showSyncStatus('No sync file found on Drive — save first', false); return; }
     applySyncPayload(data);
-    showSyncStatus(`Loaded ${contacts.length} contacts from Google Drive ✓`);
+    showSyncStatus('Loaded '+contacts.length+' contacts from Google Drive ✓');
     document.getElementById('gdrive-actions')?.remove();
   }catch(e){ gdToken=null; showSyncStatus('Load failed: '+e.message, false); }
 }
@@ -1647,10 +1775,18 @@ function seedIfEmpty(){
 }
 
 checkDropboxReturn();
+// Handle Google OAuth redirect return — must run before init
+const hadToken = gdriveSaveTokenFromHash();
 seedIfEmpty();
 init();
 setupAutoSyncLifecycle();
-autoSyncLoadOnOpen();
+if(hadToken){
+  handlePendingGdriveAction().then(()=>{
+    if(!sessionStorage.getItem('bm_gd_pending')) autoSyncLoadOnOpen();
+  });
+} else {
+  autoSyncLoadOnOpen();
+}
 </script>
 </body>
 </html>
